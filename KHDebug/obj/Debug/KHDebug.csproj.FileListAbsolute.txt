@@ -1,0 +1,92 @@
+D:\Documents\Visual Studio 2017\Projects\KHDebug\KHDebug\obj\Debug\KHDebug.csproj.CoreCompileInputs.cache
+D:\Documents\Visual Studio 2017\Projects\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\MonoGame.Framework.dll.config
+D:\Documents\Visual Studio 2017\Projects\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\x86\SDL2.dll
+D:\Documents\Visual Studio 2017\Projects\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\x64\SDL2.dll
+D:\Documents\Visual Studio 2017\Projects\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\x86\soft_oal.dll
+D:\Documents\Visual Studio 2017\Projects\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\x64\soft_oal.dll
+D:\Documents\Visual Studio 2017\Projects\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\x86\libSDL2-2.0.so.0
+D:\Documents\Visual Studio 2017\Projects\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\x64\libSDL2-2.0.so.0
+D:\Documents\Visual Studio 2017\Projects\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\x86\libopenal.so.1
+D:\Documents\Visual Studio 2017\Projects\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\x64\libopenal.so.1
+D:\Documents\Visual Studio 2017\Projects\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\libSDL2-2.0.0.dylib
+D:\Documents\Visual Studio 2017\Projects\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\libopenal.1.dylib
+D:\Documents\Visual Studio 2017\Projects\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\KHDebug.exe
+D:\Documents\Visual Studio 2017\Projects\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\KHDebug.pdb
+D:\Documents\Visual Studio 2017\Projects\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\BrandonPotter.XBox.dll
+D:\Documents\Visual Studio 2017\Projects\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\ef1Declib.dll
+D:\Documents\Visual Studio 2017\Projects\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\MonoGame.Framework.dll
+D:\Documents\Visual Studio 2017\Projects\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\OpenTK.dll
+D:\Documents\Visual Studio 2017\Projects\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\SharpDX.dll
+D:\Documents\Visual Studio 2017\Projects\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\SharpDX.XInput.dll
+D:\Documents\Visual Studio 2017\Projects\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\OpenTK.pdb
+D:\Documents\Visual Studio 2017\Projects\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\OpenTK.xml
+D:\Documents\Visual Studio 2017\Projects\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\SharpDX.xml
+D:\Documents\Visual Studio 2017\Projects\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\SharpDX.XInput.xml
+D:\Documents\Visual Studio 2017\Projects\KHDebug\KHDebug\obj\Debug\KHDebug.csproj.CopyComplete
+D:\Documents\Visual Studio 2017\Projects\KHDebug\KHDebug\obj\Debug\KHDebug.exe
+D:\Documents\Visual Studio 2017\Projects\KHDebug\KHDebug\obj\Debug\KHDebug.pdb
+D:\Documents\Visual Studio 2017\Projects\KHDebug\KHDebug\obj\Debug\KHDebug.csprojAssemblyReference.cache
+D:\Documents\Visual Studio 2017\Projects\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\7zip443.dll
+D:\Documents\Visual Studio 2017\Projects\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\Custeera.dll
+F:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\x86\SDL2.dll
+F:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\x64\SDL2.dll
+F:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\x86\soft_oal.dll
+F:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\x64\soft_oal.dll
+F:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\x86\libSDL2-2.0.so.0
+F:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\x64\libSDL2-2.0.so.0
+F:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\x86\libopenal.so.1
+F:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\x64\libopenal.so.1
+F:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\libSDL2-2.0.0.dylib
+F:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\libopenal.1.dylib
+F:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\MonoGame.Framework.dll.config
+F:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\KHDebug.exe
+F:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\KHDebug.pdb
+F:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\7zip443.dll
+F:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\BrandonPotter.XBox.dll
+F:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\Custeera.dll
+F:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\ef1Declib.dll
+F:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\MonoGame.Framework.dll
+F:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\OpenTK.dll
+F:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\SharpDX.dll
+F:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\SharpDX.XInput.dll
+F:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\OpenTK.pdb
+F:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\OpenTK.xml
+F:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\SharpDX.XInput.xml
+F:\Desktop\KHDebug\KHDebug\obj\Debug\KHDebug.csproj.CoreCompileInputs.cache
+F:\Desktop\KHDebug\KHDebug\obj\Debug\KHDebug.csproj.CopyComplete
+F:\Desktop\KHDebug\KHDebug\obj\Debug\KHDebug.exe
+F:\Desktop\KHDebug\KHDebug\obj\Debug\KHDebug.pdb
+F:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\KHDebug.exe.config
+F:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\SharpDX.pdb
+F:\Desktop\KHDebug\KHDebug\obj\Debug\KHDebug.csprojAssemblyReference.cache
+G:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\x86\SDL2.dll
+G:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\x64\SDL2.dll
+G:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\x86\soft_oal.dll
+G:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\x64\soft_oal.dll
+G:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\x86\libSDL2-2.0.so.0
+G:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\x64\libSDL2-2.0.so.0
+G:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\x86\libopenal.so.1
+G:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\x64\libopenal.so.1
+G:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\libSDL2-2.0.0.dylib
+G:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\libopenal.1.dylib
+G:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\MonoGame.Framework.dll.config
+G:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\KHDebug.exe.config
+G:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\KHDebug.exe
+G:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\KHDebug.pdb
+G:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\7zip443.dll
+G:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\BrandonPotter.XBox.dll
+G:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\Custeera.dll
+G:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\ef1Declib.dll
+G:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\MonoGame.Framework.dll
+G:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\OpenTK.dll
+G:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\SharpDX.dll
+G:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\SharpDX.XInput.dll
+G:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\OpenTK.pdb
+G:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\OpenTK.xml
+G:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\SharpDX.pdb
+G:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\SharpDX.XInput.xml
+G:\Desktop\KHDebug\KHDebug\obj\Debug\KHDebug.csprojAssemblyReference.cache
+G:\Desktop\KHDebug\KHDebug\obj\Debug\KHDebug.csproj.CoreCompileInputs.cache
+G:\Desktop\KHDebug\KHDebug\obj\Debug\KHDebug.csproj.CopyComplete
+G:\Desktop\KHDebug\KHDebug\obj\Debug\KHDebug.exe
+G:\Desktop\KHDebug\KHDebug\obj\Debug\KHDebug.pdb

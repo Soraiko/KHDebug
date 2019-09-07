@@ -1,0 +1,65 @@
+
+                ScaRoTra srt = new ScaRoTra(m);
+                if (t == this.Skeleton.LeftFoot)
+                {
+                    Quaternion q2 = Skeleton.FromAxisAngle(new Vector3(0, 0, 1), srt.RotateZ + this.Skeleton.LeftFootV3_.Z) *
+                        Skeleton.FromAxisAngle(new Vector3(0, 1, 0), srt.RotateY + this.Skeleton.LeftFootV3_.Y) *
+                        Skeleton.FromAxisAngle(new Vector3(1, 0, 0), srt.RotateX + this.Skeleton.LeftFootV3_.X);
+
+                    m = Matrix.CreateFromQuaternion(q2) * Matrix.CreateTranslation(new Vector3(srt.TranslateX, srt.TranslateY, srt.TranslateZ));
+                }
+                if (t == this.Skeleton.LeftKnee)
+                {
+                    Quaternion q2 = Skeleton.FromAxisAngle(new Vector3(0, 0, 1), srt.RotateZ + this.Skeleton.LeftKneeV3_.Z) *
+                        Skeleton.FromAxisAngle(new Vector3(0, 1, 0), srt.RotateY + this.Skeleton.LeftKneeV3_.Y) *
+                        Skeleton.FromAxisAngle(new Vector3(1, 0, 0), srt.RotateX + this.Skeleton.LeftKneeV3_.X);
+
+                    m = Matrix.CreateFromQuaternion(q2) * Matrix.CreateTranslation(new Vector3(srt.TranslateX, srt.TranslateY, srt.TranslateZ));
+                }
+                if (t == this.Skeleton.LeftLeg)
+                {
+                    Quaternion q2 = Skeleton.FromAxisAngle(new Vector3(0, 0, 1), srt.RotateZ + this.Skeleton.LeftLegV3_.Z) *
+                        Skeleton.FromAxisAngle(new Vector3(0, 1, 0), srt.RotateY + this.Skeleton.LeftLegV3_.Y) *
+                        Skeleton.FromAxisAngle(new Vector3(1, 0, 0), srt.RotateX + this.Skeleton.LeftLegV3_.X);
+
+                    m = Matrix.CreateFromQuaternion(q2) * Matrix.CreateTranslation(new Vector3(srt.TranslateX, srt.TranslateY, srt.TranslateZ));
+
+                }
+                if (t == this.Skeleton.RightFoot)
+                {
+                    Quaternion q2 = Skeleton.FromAxisAngle(new Vector3(0, 0, 1), srt.RotateZ + this.Skeleton.RightFootV3_.Z) *
+                        Skeleton.FromAxisAngle(new Vector3(0, 1, 0), srt.RotateY + this.Skeleton.RightFootV3_.Y) *
+                        Skeleton.FromAxisAngle(new Vector3(1, 0, 0), srt.RotateX + this.Skeleton.RightFootV3_.X);
+
+                    m = Matrix.CreateFromQuaternion(q2) * Matrix.CreateTranslation(new Vector3(srt.TranslateX, srt.TranslateY, srt.TranslateZ));
+
+                }
+                if (t == this.Skeleton.RightKnee)
+                {
+                    Quaternion q2 = Skeleton.FromAxisAngle(new Vector3(0, 0, 1), srt.RotateZ + this.Skeleton.RightKneeV3_.Z) *
+                        Skeleton.FromAxisAngle(new Vector3(0, 1, 0), srt.RotateY + this.Skeleton.RightKneeV3_.Y) *
+                        Skeleton.FromAxisAngle(new Vector3(1, 0, 0), srt.RotateX + this.Skeleton.RightKneeV3_.X);
+
+                    m = Matrix.CreateFromQuaternion(q2) * Matrix.CreateTranslation(new Vector3(srt.TranslateX, srt.TranslateY, srt.TranslateZ));
+                }
+                if (t == this.Skeleton.RightLeg)
+                {
+                    Quaternion q2 = Skeleton.FromAxisAngle(new Vector3(0, 0, 1), srt.RotateZ + this.Skeleton.RightLegV3_.Z) *
+                        Skeleton.FromAxisAngle(new Vector3(0, 1, 0), srt.RotateY + this.Skeleton.RightLegV3_.Y) *
+                        Skeleton.FromAxisAngle(new Vector3(1, 0, 0), srt.RotateX + this.Skeleton.RightLegV3_.X);
+
+                    m = Matrix.CreateFromQuaternion(q2) * Matrix.CreateTranslation(new Vector3(srt.TranslateX, srt.TranslateY, srt.TranslateZ));
+
+                }
+                if (this.Transpose && this.Master == null && t == 0 )
+                {
+                    if (!Single.IsNaN(this.TransportingZero.X))
+                    this.TransportedZero = m.Translation - this.TransportingZero;
+                    this.TransportingZero = m.Translation;
+                    if (!this.interpolateAnimation)
+                            //(this.Links[0] as Model).Location += Vector3.Transform(m.Translation-this.Skeleton.ZeroPosition, Matrix.CreateRotationY((this.Links[0] as Model).Rotate));
+
+                    (this.Links[0] as Model).Location += Vector3.Transform(this.TransportedZero, Matrix.CreateRotationY((this.Links[0] as Model).Rotate));
+
+                    m.Translation = this.Skeleton.ZeroPosition;
+                }
