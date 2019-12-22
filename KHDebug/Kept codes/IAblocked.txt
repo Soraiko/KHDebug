@@ -1,0 +1,103 @@
+
+                if (false)
+                {
+                    Vector3 oriPoint = 1f * requestedLoc;
+                    Vector3 targetPoint = 1f * mainCamera.Target.Location;
+                    float dist = Vector3.Distance(oriPoint, targetPoint);
+                    float angl = MainGame.PI*1.5f-(float)Math.Atan2((oriPoint.Z - targetPoint.Z) / dist, (oriPoint.X - targetPoint.X) / dist);
+                    
+                    SrkBinary.MakePrincipal(ref angl);
+                    angl = Math.Abs(angl-mainCamera.PrincipalYaw);
+                    bool tropLoin = dist > 800 && angl>1.9f && angl < 4.1f;
+                    if (tropLoin)
+                        model.IgnoreAudio3D_factor = 10f;
+                    if (tropLoin || model.SmoothJoystick > 0.4 && model.Speed > 0f && model.Speed < 5f)
+                    {
+                        model.iaBlockedCount++;
+                    }
+
+                    if (!tropLoin)
+                    {
+                        if (model.IgnoreAudio3D_factor > 1)
+                            model.IgnoreAudio3D_factor *= 0.95f;
+
+                        if (model.IgnoreAudio3D_factor <=1)
+                            model.IgnoreAudio3D_factor = 1f;
+
+                        if (FPS <10)
+                        {
+                            model.iaBlockedCount = 0;
+                        }
+                    }
+
+                    if (model.iaBlockedCount > 50)
+                    {
+                        oriPoint.Y += model.HeadHeight.Y * 2f;
+                        targetPoint.Y += mainCamera.Target.HeadHeight.Y * 2f;
+
+                        if (!Single.IsNaN(model.Goto.X) && !(this.Map.Links[0] as Collision).HasCol(oriPoint, targetPoint))
+                        {
+                            model.iaBlockedCount = 0;
+                            model.Goto.X = Single.NaN;
+                        }
+                        else
+                        for (int i = mainCamera.Target.PathHistory.Count - 1; i > 0; i--)
+                        {
+                            Vector3 point = 1f * mainCamera.Target.PathHistory[i];
+                            if (tropLoin)
+                            {
+                                dist = Vector3.Distance(point, targetPoint);
+                                angl = MainGame.PI * 1.5f - (float)Math.Atan2((point.Z - targetPoint.Z) / dist, (point.X - targetPoint.X) / dist);
+
+                                SrkBinary.MakePrincipal(ref angl);
+                                angl = Math.Abs(angl - mainCamera.PrincipalYaw);
+
+                                if (angl > 1.9f && angl < 4.1f && Vector3.Distance(point, targetPoint) >= 800)
+                                {
+                                    model.iaBlockedCount = 0;
+                                    model.Goto.X = Single.NaN;
+                                    requestedLoc = point;
+                                    model.LowestFloor = mainCamera.Target.LowestFloor;
+                                    requestedLoc.Y = mainCamera.Target.LowestFloor;
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                point.Y += mainCamera.Target.HeadHeight.Y * 2f;
+                                if (!(this.Map.Links[0] as Collision).HasCol(oriPoint, point) &&
+                                !(this.Map.Links[0] as Collision).HasCol(point - model.Epaisseur * ((targetPoint - point) / Vector3.Distance(targetPoint, point)), point + model.Epaisseur * ((targetPoint - point)/Vector3.Distance(targetPoint , point))   ))
+                                {
+                                    if (model.cState == Model.ControlState.Jump)
+                                        model.JumpPress = Math.Abs(model.JumpStart - requestedLoc.Y) < Math.Abs(model.JumpStart - point.Y);
+
+
+                                    if (point.Y - mainCamera.Target.HeadHeight.Y * 2f > oriPoint.Y - model.HeadHeight.Y * 2f + 30)
+                                    {
+                                        if (model.cState != Model.ControlState.Jump)
+                                        {
+                                            model.JumpPress = true;
+                                            model.JumpCancel = false;
+                                            model.JumpCollisionCancel = false;
+                                            if (model.JumpDelay < 0)
+                                                model.JumpDelay = model.cState == Model.ControlState.Land ? 6 : 0;
+                                            model.JumpStart = model.LowestFloor;
+                                        }
+                                    }
+                                    model.SmoothJoystick = 1f;
+                                    point.Y -= mainCamera.Target.HeadHeight.Y * 2f;
+                                    model.Goto = ((point - requestedLoc) * 1.3f) + requestedLoc;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    else if (!Single.IsNaN(model.Goto.X))
+                    if (model.iaBlockedCount>0)
+                    {
+                        model.iaBlockedCount = 0;
+                        model.Goto.X = Single.NaN;
+                    }
+
+
+                }

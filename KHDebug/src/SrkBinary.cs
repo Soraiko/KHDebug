@@ -17,16 +17,6 @@ namespace KHDebug
         public static void MakePrincipal(ref float val)
         {
             val = (float)Math.Atan2(Math.Sin(val), Math.Cos(val));
-            /*if (val<0)
-            {
-                val = -val;
-                val = (float)(val % (Math.PI * 2));
-                val = -val;
-            }
-            else
-            {
-                val = (float)(val % (Math.PI * 2));
-            }*/
         }
 
         public static void ExtractFile(string sourceArchive, string destination)

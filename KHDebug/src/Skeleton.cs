@@ -27,9 +27,13 @@ namespace KHDebug
             }
         }
 
-        public int RootBone = 0;
+		public int RootBone = 0;
         public int HeadBone = -1;
-        public int LeftHandBone = -1;
+        public int NeckBone = -1;
+		public bool NeckBoneSet = false;
+		public float NeckBoneDest = 0;
+
+		public int LeftHandBone = -1;
 
         public int LeftLeg = -1;
         public int LeftKnee = -1;

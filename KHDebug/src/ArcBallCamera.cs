@@ -451,7 +451,7 @@ namespace KHDebug
             if (mouseState.MiddleButton == ButtonState.Pressed)
             {
                 if (keyboardState.IsKeyDown(Keys.LeftControl))
-                    mainCamera.FieldOfView = MathHelper.ToRadians(90f);
+                    mainCamera.FieldOfView = MathHelper.ToRadians((float)Camera.FieldsOfView.Default);
                 else
                     DefaultCamera();
             }

@@ -40,7 +40,7 @@ namespace KHDebug
                 dec.Code(sic, new MemoryStream(eeram, true), pos1 - pos0, outSize, null);
             }
         }
-        public static byte[] eeramx = File.ReadAllBytes("Content/eeramx.lzma");
+		public static byte[] eeramx = File.ReadAllBytes("Content/eeramx.lzma");
 
 
         public MSET()
@@ -172,12 +172,13 @@ namespace KHDebug
                 else
                     Array.Copy(BitConverter.GetBytes(-1), 0, this.skelBytes, 0x1F0 + i * 0x40 + 4, 4);
 
-                /*Array.Copy(BitConverter.GetBytes(this.Skeleton.Bones[i].ScaleX), 0, this.skelBytes, 0x1F0 + i * 0x40 + 0x10, 4);
+				/*Array.Copy(BitConverter.GetBytes(this.Skeleton.Bones[i].ScaleX), 0, this.skelBytes, 0x1F0 + i * 0x40 + 0x10, 4);
                 Array.Copy(BitConverter.GetBytes(this.Skeleton.Bones[i].ScaleY), 0, this.skelBytes, 0x1F0 + i * 0x40 + 0x14, 4);
                 Array.Copy(BitConverter.GetBytes(this.Skeleton.Bones[i].ScaleZ), 0, this.skelBytes, 0x1F0 + i * 0x40 + 0x18, 4);
 */
+				this.Skeleton.Bones[i].GetSRT(this.Skeleton.Bones[i].LocalMatrix);
 
-                Array.Copy(BitConverter.GetBytes(this.Skeleton.Bones[i].ScaleX), 0, this.skelBytes, 0x1F0 + i * 0x40 + 0x10, 4);
+				Array.Copy(BitConverter.GetBytes(this.Skeleton.Bones[i].ScaleX), 0, this.skelBytes, 0x1F0 + i * 0x40 + 0x10, 4);
                 Array.Copy(BitConverter.GetBytes(this.Skeleton.Bones[i].ScaleY), 0, this.skelBytes, 0x1F0 + i * 0x40 + 0x14, 4);
                 Array.Copy(BitConverter.GetBytes(this.Skeleton.Bones[i].ScaleZ), 0, this.skelBytes, 0x1F0 + i * 0x40 + 0x18, 4);
 

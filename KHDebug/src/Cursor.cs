@@ -9,7 +9,32 @@ using Microsoft.Xna.Framework.Input;
 using System.IO;
 namespace KHDebug
 {
-    public class Cursor
+	public static class TriangleStrip
+	{
+		/*TriangleStrip.VPC[0].Position = v1;
+		TriangleStrip.VPC[1].Position = v2;
+		TriangleStrip.VPC[2].Position = v3;*/
+		//Program.game.cursors[1].Position = coin;
+
+		public static VertexPositionColor[] VPC = new VertexPositionColor[] {
+			new VertexPositionColor(Vector3.Zero,Color.Red),
+			new VertexPositionColor(Vector3.Zero,Color.Red),
+			new VertexPositionColor(Vector3.Zero,Color.Red)
+		};
+
+		public static void Draw(GraphicsDeviceManager gcm, BasicEffect be, RasterizerState rs)
+		{
+			gcm.GraphicsDevice.RasterizerState = rs;
+			be.DiffuseColor = Color.White.ToVector3();
+			be.VertexColorEnabled = true;
+			be.TextureEnabled = false;
+			be.CurrentTechnique.Passes[0].Apply();
+			gcm.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, VPC, 0, 1);
+			be.TextureEnabled = true;
+		}
+	}
+
+	public class Cursor
     {
 
         public static Vector3[] VECTORS = new Vector3[] {

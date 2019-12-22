@@ -598,7 +598,7 @@ namespace ee1Dec.C {
             }
         }
 
-        public static byte[] eeram = File.ReadAllBytes(CnfUt.findeeram);
+		public static byte[] eeram = new byte[0];// File.ReadAllBytes(CnfUt.findeeram);
     }
 
     class MobRecUt {

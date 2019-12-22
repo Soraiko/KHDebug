@@ -1,0 +1,106 @@
+
+			string[] input = File.ReadAllLines(@"D:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\Content\Models\TT08\latestOK2.ma");
+			int count = 0;
+			List<string> already = new List<string>(0);
+			List<string> alreadyReplaced = new List<string>(0);
+
+			for (int i=0;i<input.Length;i++)
+			{
+				if (input[i].Length < 15)
+					continue;
+				if (input[i][0] != 'c')
+					continue;
+				if (input[i][1] != 'r')
+					continue;
+				if (input[i][2] != 'e')
+					continue;
+				if (input[i][6] != 'N')
+					continue;
+				if (input[i][7] != 'o')
+					continue;
+				if (input[i][11] != 'f')
+					continue;
+				if (input[i][12] != 'i')
+					continue;
+				string[] spli = new string[0];
+				int j = i + 1;
+				for (;j<i+10;j++)
+				{
+					if (input[j].Contains("createNode"))
+					{
+						break;
+					}
+					if (input[j].Contains("\".ftn\""))
+					{
+						spli = input[j].Split('"');
+						break;
+					}
+				}
+				if (spli.Length>5)
+				{
+					string nodeName = spli[5];
+					
+					int ind = already.IndexOf(nodeName);
+					if (ind<0)
+					{
+						File.Move(nodeName, @"D:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\Content\Models\TT08\texture_" + count.ToString("d3")+".png");
+						already.Add(nodeName);
+						alreadyReplaced.Add("texture_" + count.ToString("d3") + ".png");
+						input[j] = input[j].Replace(nodeName, "texture_" + count.ToString("d3") + ".png");
+						count++;
+					}
+					else
+					{
+						/*string oldID = input[i].Split('\"')[1];
+						Console.WriteLine(oldID);
+						bool forget_1 = false;
+
+						if (forget_1)
+						{
+							input[i] = "";
+							int curr = i + 1;
+							while (!input[curr].Contains("createNode"))
+							{
+								input[curr] = "";
+								curr++;
+							}
+						}
+						string newID = "";
+						for (int k = 0; k < input.Length; k++)
+						{
+							if (input[k].Contains(nodeName))
+							{
+								while (!input[k].Contains("createNode"))
+								{
+									k--;
+								}
+								newID = input[k].Split('\"')[1];
+								if (!forget_1)
+								{
+									input[k] = "";
+									int curr = k + 1;
+									while (!input[curr].Contains("createNode"))
+									{
+										input[curr] = "";
+										curr++;
+									}
+								}
+								break;
+							}
+						}
+
+						for (int k = 0; k < input.Length; k++)
+						{
+							if (forget_1)
+								input[k] = input[k].Replace("\"" + oldID + "\"", "\"" + newID + "\"");
+							else
+								input[k] = input[k].Replace("\"" + newID + "\"", "\"" + oldID + "\"");
+						}*/
+						
+						input[j] = input[j].Replace(nodeName, alreadyReplaced[ind]);
+					}
+				}
+
+			}
+			File.WriteAllLines(@"D:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\Content\Models\TT08\latestOK3.ma",input);
+			Process.GetCurrentProcess().Kill();

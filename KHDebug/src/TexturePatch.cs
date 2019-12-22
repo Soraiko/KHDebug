@@ -29,6 +29,8 @@ namespace KHDebug
             this.currBlink = 0;
             this.blink_half = -1;
             this.blink = -1;
+            this.open_half = -1;
+            this.open = -1;
             this.original = null;
             this.lastIndex = -2;
             this.Width = 0;
@@ -62,13 +64,19 @@ namespace KHDebug
                     case "count":
                         this.Count = int.Parse(spli[1]);
                         break;
-                    case "blink_half":
-                        this.blink_half = int.Parse(spli[1]);
-                        break;
-                    case "blink":
-                        this.blink = int.Parse(spli[1]);
-                        break;
-                }
+					case "blink_half":
+						this.blink_half = int.Parse(spli[1]);
+						break;
+					case "blink":
+						this.blink = int.Parse(spli[1]);
+						break;
+					case "open_half":
+						this.open_half = int.Parse(spli[1]);
+						break;
+					case "open":
+						this.open = int.Parse(spli[1]);
+						break;
+				}
             }
             patch = new Microsoft.Xna.Framework.Color[0];
             if (File.Exists(Path.GetDirectoryName(filename)+@"\"+ Path.GetFileNameWithoutExtension(filename)+".png"))
@@ -77,7 +85,7 @@ namespace KHDebug
                 Texture2D t2d = Texture2D.FromStream(Program.game.graphics.GraphicsDevice, fs);
                 patch = new Microsoft.Xna.Framework.Color[t2d.Width* t2d.Height];
 
-                if (Program.game.Loading == MainGame.LoadingState.Loading)
+                if (Program.game.Loading != MainGame.LoadingState.NotLoading)
                 {
                     Program.game.sourceCopyT2D = t2d;
                     Program.game.OrderingThreadColorCopy = true;
@@ -94,15 +102,17 @@ namespace KHDebug
             }
         }
 
-        int lastIndex;
+		public int lastIndex;
         private Microsoft.Xna.Framework.Color[] patch;
         private Texture2D original;
         private int Width;
         private int Height;
 
         public void GetPatch(int index)
-        {
-            if (original==null)
+		{
+			if (Program.game.Loading != MainGame.LoadingState.NotLoading)
+				return;
+			if (original==null)
             {
                 original = new Texture2D(Program.game.graphics.GraphicsDevice, this.model.Textures[this.TextureIndex].Width, this.model.Textures[this.TextureIndex].Height);
                 Microsoft.Xna.Framework.Color[] data = new Microsoft.Xna.Framework.Color[original.Width * original.Height];
@@ -138,14 +148,39 @@ namespace KHDebug
 
         private int nextBlink;
         private int currBlink;
-        private int blink_half;
-        private int blink;
-        private Random rnd;
+		private int blink_half;
+		private int blink;
+		private int open_half;
+		private int open;
+		private Random rnd;
         public bool f10Patching;
 
 
 
-        public void Animate()
+        public void AnimateMouth()
+        {
+            if (f10Patching)
+                return;
+            if (open < 0 || open_half < 0)
+                return;
+            currBlink++;
+			if (currBlink < 8)
+			{
+				GetPatch(this.open);
+			}
+			else if (currBlink < 16)
+			{
+				GetPatch(this.open_half);
+			}
+			else
+			{
+				GetPatch(-1);
+				if (currBlink > 24)
+					currBlink = 0;
+			}
+        }
+
+        public void AnimateEye()
         {
             if (f10Patching)
                 return;

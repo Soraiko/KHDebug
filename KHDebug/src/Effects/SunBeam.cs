@@ -176,13 +176,14 @@ namespace KHDebug
             
             Vector3 midd = (this.To - this.From) / 2f;
 
+			var matAngle = Matrix.CreateRotationY(angle);
 
-            Vector3 diffFrom = this.From - midd;
-            diffFrom = Vector3.Transform(diffFrom, Matrix.CreateRotationY(angle));
+			Vector3 diffFrom = this.From - midd;
+            diffFrom = Vector3.Transform(diffFrom, matAngle);
             diffFrom += midd;
 
             Vector3 diffTo = this.To - midd;
-            diffTo = Vector3.Transform(diffTo, Matrix.CreateRotationY(angle));
+            diffTo = Vector3.Transform(diffTo, matAngle);
             diffTo += midd;
 
             Vector3 diff = this.To - diffFrom;
@@ -207,10 +208,12 @@ namespace KHDebug
             }
             this.vBuffer.SetData<VertexPositionColorTexture>(this.vpct);
         }
+		
+
 
         public void Draw(GraphicsDeviceManager gcm, BasicEffect be, RasterizerState rs)
         {
-            if (this.coll.HasCol(Program.game.mainCamera.SunBeamPosition, this.From))
+            if (!Single.IsNaN(this.coll.HasCol(Program.game.mainCamera.SunBeamPosition, this.From).X))
                 return;
             gcm.GraphicsDevice.RasterizerState = rs;
 
@@ -222,9 +225,9 @@ namespace KHDebug
             be.Texture = texture;
             be.CurrentTechnique.Passes[0].Apply();
 
-            gcm.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, 24, 0, 24 / 3);
+			gcm.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, 24, 0, 24 / 3);
 
-            gcm.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+			gcm.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
         }
     }
 }

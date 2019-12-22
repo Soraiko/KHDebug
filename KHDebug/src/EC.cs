@@ -54,79 +54,94 @@ namespace KHDebug
             return output;
         }
 
-        public EC(string fname)
-        {
-            this.oldFrame1 = -1;
-            this.oldFrame2 = -1;
-            this.Group1 = new List<Eff>(0);
-            this.Group2 = new List<Eff>(0);
-            if (File.Exists(fname))
+		public EC(string fname)
+		{
+			this.oldFrame1 = -1;
+			this.oldFrame2 = -1;
+			this.Group1 = new List<Eff>(0);
+			this.Group2 = new List<Eff>(0);
+
+			if (File.Exists(fname))
+			{
+				byte[] data = File.ReadAllBytes(fname);
+				if (data.Length > 0)
+					Load(data, 0, data.Length);
+			}
+		}
+
+		public EC(byte[] data, int index, int length)
+		{
+			this.oldFrame1 = -1;
+			this.oldFrame2 = -1;
+			this.Group1 = new List<Eff>(0);
+			this.Group2 = new List<Eff>(0);
+
+			Load(data, 0, data.Length);
+		}
+
+		public void Load(byte[] data, int index, int length)
+		{
+			byte cnt1 = data[0];
+			byte cnt2 = data[1];
+			byte start2 = data[2];
+			int pos = 4;
+
+			/*for (int j = 0; j < data.Length; j++)
             {
-                byte[] data = File.ReadAllBytes(fname);
-                if (data.Length>0)
+                Console.Write(data[j].ToString("X2") + " ");
+                if (j % 16 == 15)
+                    Console.WriteLine("");
+            }*/
+
+			for (int i = 0; i < cnt1; i++)
+			{
+				Eff e_ = new Eff
+				{
+					Start = BitConverter.ToInt16(data, pos),
+					End = BitConverter.ToInt16(data, pos + 2),
+					ID = data[pos + 4]
+				};
+				int additionnalBytes = data[pos + 5] * 2;
+				e_.Data = new byte[additionnalBytes];
+				if (additionnalBytes > 0)
+				{
+					Array.Copy(data, pos + 6, e_.Data, 0, additionnalBytes);
+				}
+				this.Group1.Add(e_);
+				pos += 6 + additionnalBytes;
+			}
+			pos = start2;
+
+			for (int i = 0; i < cnt2; i++)
+			{
+				Eff e_ = new Eff
+				{
+					Start = BitConverter.ToInt16(data, pos)
+				};
+				e_.End = e_.Start;
+				e_.ID = data[pos + 2];
+
+				int additionnalBytes = data[pos + 3] * 2;
+				e_.Data = new byte[additionnalBytes];
+				if (additionnalBytes > 0)
+				{
+					Array.Copy(data, pos + 4, e_.Data, 0, additionnalBytes);
+				}
+				this.Group2.Add(e_);
+				pos += 4 + additionnalBytes;
+				/*Console.WriteLine("");
+                Console.WriteLine(e_.Start.ToString("X2"));
+                Console.WriteLine(e_.End.ToString("X2"));
+                Console.WriteLine(e_.ID.ToString("X2"));
+                for (int j = 0; j < e_.Data.Length; j++)
                 {
-                    byte cnt1 = data[0];
-                    byte cnt2 = data[1];
-                    byte start2 = data[2];
-                    int pos = 4;
-
-                    /*for (int j = 0; j < data.Length; j++)
-                    {
-                        Console.Write(data[j].ToString("X2") + " ");
-                        if (j % 16 == 15)
-                            Console.WriteLine("");
-                    }*/
-
-                    for (int i = 0; i < cnt1; i++)
-                    {
-                        Eff e_ = new Eff
-                        {
-                            Start = BitConverter.ToInt16(data, pos),
-                            End = BitConverter.ToInt16(data, pos + 2),
-                            ID = data[pos + 4]
-                        };
-                        int additionnalBytes = data[pos + 5] * 2;
-                        e_.Data = new byte[additionnalBytes];
-                        if (additionnalBytes > 0)
-                        {
-                            Array.Copy(data, pos + 6, e_.Data, 0, additionnalBytes);
-                        }
-                        this.Group1.Add(e_);
-                        pos += 6 + additionnalBytes;
-                    }
-                    pos = start2;
-
-                    for (int i = 0; i < cnt2; i++)
-                    {
-                        Eff e_ = new Eff
-                        {
-                            Start = BitConverter.ToInt16(data, pos)
-                        };
-                        e_.End = e_.Start;
-                        e_.ID = data[pos + 2];
-
-                        int additionnalBytes = data[pos + 3] * 2;
-                        e_.Data = new byte[additionnalBytes];
-                        if (additionnalBytes > 0)
-                        {
-                            Array.Copy(data, pos + 4, e_.Data, 0, additionnalBytes);
-                        }
-                        this.Group2.Add(e_);
-                        pos += 4 + additionnalBytes;
-                        /*Console.WriteLine("");
-                        Console.WriteLine(e_.Start.ToString("X2"));
-                        Console.WriteLine(e_.End.ToString("X2"));
-                        Console.WriteLine(e_.ID.ToString("X2"));
-                        for (int j = 0; j < e_.Data.Length; j++)
-                        {
-                            Console.Write(e_.Data[j].ToString("X2") + " ");
-                            if (j % 16 == 15)
-                                Console.WriteLine("");
-                        }
-                        Console.WriteLine("");*/
-                    }
+                    Console.Write(e_.Data[j].ToString("X2") + " ");
+                    if (j % 16 == 15)
+                        Console.WriteLine("");
                 }
-            }
-        }
+                Console.WriteLine("");*/
+			}
+		}
+
     }
 }

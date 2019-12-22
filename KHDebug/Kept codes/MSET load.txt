@@ -1,0 +1,20 @@
+
+			/*if (false&&modelName.Contains("P_EX100"))
+            {
+                MSET mset = new MSET(@"Content\Models\P_EX100\wait.mset");
+                mset.Links.Add(model);
+                mset.Parse();
+                ResourceFiles.Add(mset);
+                mset.Render = true;
+                mset.ExportBinary();
+                mset.PlayingIndex = mset.idle_;
+                model.Links.Add(mset);
+
+            }
+            else
+            {*/
+			/*MSET m = new MSET(@"D:\Jeux\Kingdom Hearts\app_KH2Tools\export\anm_converted\hb\p_ex100.mset");
+			m.Links.Add(model);
+			m.Parse();
+			m.ExportBinary();*/
+			//}

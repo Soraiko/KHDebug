@@ -11,73 +11,86 @@ namespace KHDebug
 {
     public static class MAPSpecies
     {
-        static List<string> starts = new List<string>(0);
-        static List<bool> FirstPass = new List<bool>(0);
 
-        public static void ApplySpecies(Model map)
+        public static void ApplySpecies(MAP map)
         {
-            int index = starts.IndexOf(map.Name);
-            if (index<0)
-            {
-                index = starts.Count;
-                starts.Add(map.Name);
-                FirstPass.Add(true);
-            }
+
             switch (map.ResourceIndex)
             {
-                case 2:
+                case 8:
                     for (int i=0;i<map.Supp.Count;i++)
                     {
                         Moveset mset = map.SuppMsets[i];
                         Model mdl = map.Supp[i];
-                        
-                        if (FirstPass[index] && mdl.ResourceIndex == 8 /*.Name == "TT08-mdl-Bird"*/)
+
+						/*if (map.JustLoaded && mdl.ResourceIndex == 14) //TT08-mdl-Bird
                         {
                             mset.PlayingIndex = 0;
                             mset.FrameStep = 1.5f;
                         }
-                        if (FirstPass[index] && mdl.ResourceIndex == 9 /*.Name == "TT08-mdl-Trees"*/)
+                        if (map.JustLoaded && mdl.ResourceIndex == 17 ) //TT08-mdl-Trees
                         {
                             mset.PlayingIndex = 0;
                             mset.FrameStep = 1f;
-                        }
-                        if (mdl.ResourceIndex == 7 /*.Name == "TT08-mdl-Bells"*/ && mset !=null)
+                        }*/
+
+						if (mdl.ResourceIndex == 13 /*.Name == "TT08-mdl-Bells"*/ && mset !=null)
                         {
                             float newRot = 1.05f - ((DateTime.Now.Minute) / 60f) * (MainGame.PI * 2f);
                             if (Math.Abs(mset.Skeleton.Bones[2].RotateZ - newRot) > 0.01)
-                            {
-                                if (!FirstPass[index])
-                                {
+							{
+								if (!map.JustLoaded)
                                     mset.PlayingIndex = 0;
-                                }
                                 mset.Skeleton.Bones[2].RotateZ = newRot;
                             }
-                             newRot = -1.05f - (DateTime.Now.Minute / 5) * (MainGame.PI * 2f);
+                            newRot = -1.05f - (DateTime.Now.Minute / 15) * (MainGame.PI * 2f);
                             if (Math.Abs(mset.Skeleton.Bones[1].RotateZ - newRot) > 0.01)
                             {
-                                if (!FirstPass[index])
-                                {
+								if (!map.JustLoaded)
                                     mset.PlayingIndex = 1;
-                                }
                                 mset.Skeleton.Bones[1].RotateZ = newRot;
                             }
                         }
 
-                        if (mdl.ResourceIndex == 5 /*.Name=="TT08-Clock"*/)
-                        {
-                            if (FirstPass[index])
-                            {
-                                Audio.Play(@"Content\Effects\Audio\Ambient\Shared\gearsLoop.wav", true, mdl, 50);
-                            }
+
+						if (mdl.ResourceIndex == 16 /*.Name=="TT08-mdl-Tram"*/)
+						{
+							/*if (map.JustLoaded)
+								Audio.Play(@"Content\Effects\Audio\Sounds\Shared\tramMotor.wav", true, mdl, 0);*/
+
+							if (mset.FrameStep > 0.05f)
+								mset.FrameStep = 0f;
+
+							if (!map.JustLoaded)
+							{
+								if (mset.FrameStep < 0.01f)
+								{
+									if (mdl.DestOpacity > 0.9999f)
+									{
+										Audio.Play(@"Content\Effects\Audio\Sounds\Shared\tramBrake.wav", false, mdl, 50);
+										mdl.DestOpacity = 0.9999f;
+									}
+								}
+								else
+									mdl.DestOpacity = 1f;
+								int ind = Audio.names.IndexOf(@"Content\Effects\Audio\Sounds\Shared\tramMotor.wav");
+								if (ind > -1)
+									Audio.effectInstances[ind].Volume += (mset.FrameStep - Audio.effectInstances[ind].Volume) / 5f;
+							}
+							
+						}
+
+						if (mdl.ResourceIndex == 11 /*.Name=="TT08-Clock"*/)
+						{
                             /*try
                             {
                                 string[] file = System.IO.File.ReadAllLines("fog.txt");*/
                             float newRot = -1.05f - ((DateTime.Now.Hour % 12) / 12f) * (MainGame.PI * 2f);
                             if (Math.Abs(mdl.Skeleton.Bones[2].RotateZ - newRot)>0.01)
-                            {
-                                if (!FirstPass[index])
-                                {
-                                    Audio.Play(@"Content\Effects\Audio\Ambient\Shared\tick.wav", false, mdl, 50);
+							{
+								if (!map.JustLoaded)
+								{
+                                    Audio.Play(@"Content\Effects\Audio\Sounds\Shared\tick.wav", false, mdl, 50);
                                 }
                                 mdl.Skeleton.Bones[2].RotateZ = newRot;
                             }
@@ -86,9 +99,9 @@ namespace KHDebug
                             //
                             newRot = 1.05f - ((DateTime.Now.Minute) / 60f) * (MainGame.PI * 2f);
                             if (Math.Abs(mdl.Skeleton.Bones[3].RotateZ - newRot) > 0.01)
-                            {
-                                if (!FirstPass[index])
-                                    Audio.Play(@"Content\Effects\Audio\Ambient\Shared\tick.wav", false, mdl, 50);
+							{
+								if (!map.JustLoaded)
+									Audio.Play(@"Content\Effects\Audio\Sounds\Shared\tick.wav", false, mdl, 50);
                                 mdl.Skeleton.Bones[3].RotateZ = newRot;
                             }
                             m = Matrix.CreateRotationZ(mdl.Skeleton.Bones[3].RotateZ) * Matrix.CreateTranslation(mdl.Skeleton.Bones[3].localMatrix.Translation);
@@ -118,7 +131,6 @@ namespace KHDebug
                     }
                 break;
             }
-            FirstPass[index] = false;
-        }
+		}
     }
 }

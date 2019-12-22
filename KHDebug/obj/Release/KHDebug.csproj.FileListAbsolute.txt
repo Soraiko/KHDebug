@@ -49,7 +49,6 @@ D:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Release\SharpDX.dll
 D:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Release\SharpDX.XInput.dll
 D:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Release\OpenTK.pdb
 D:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Release\OpenTK.xml
-D:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Release\SharpDX.xml
 D:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Release\SharpDX.XInput.xml
 D:\Desktop\KHDebug\KHDebug\obj\Release\KHDebug.csprojAssemblyReference.cache
 D:\Desktop\KHDebug\KHDebug\obj\Release\KHDebug.csproj.CoreCompileInputs.cache
@@ -59,3 +58,5 @@ D:\Desktop\KHDebug\KHDebug\obj\Release\KHDebug.pdb
 F:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Release\KHDebug.exe.config
 F:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Release\SharpDX.pdb
 F:\Desktop\KHDebug\KHDebug\obj\Release\KHDebug.csprojAssemblyReference.cache
+D:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Release\KHDebug.exe.config
+D:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Release\SharpDX.pdb

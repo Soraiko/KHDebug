@@ -1,0 +1,34 @@
+
+			FileStream fs = new FileStream(@"D:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\Content\Models\TT09\OBJECTS\TT09-mdl-Ventilateurs\move_000.bin", FileMode.Create);
+			BinaryWriter wr = new BinaryWriter(fs);
+
+			wr.Write(steps.Length);
+			wr.Write(0);
+			wr.Write(0);
+			wr.Write(0);
+			for (int i=0;i< steps.Length; i++)
+			{
+				
+				wr.Write(m.M11);
+				wr.Write(m.M12);
+				wr.Write(m.M13);
+				wr.Write(m.M14);
+				wr.Write(m.M21);
+				wr.Write(m.M22);
+				wr.Write(m.M23);
+				wr.Write(m.M24);
+				wr.Write(m.M31);
+				wr.Write(m.M32);
+				wr.Write(m.M33);
+				wr.Write(m.M34);
+				wr.Write(m.M41);
+				wr.Write(m.M42);
+				wr.Write(m.M43);
+				wr.Write(m.M44);
+			}
+			
+
+
+
+			wr.Close();
+			fs.Close();

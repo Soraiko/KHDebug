@@ -41,20 +41,20 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\$(MonoGamePlatform)\$(Platform)\$(Configuration)\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;LINUX</DefineConstants>
+    <DefineConstants>LINUX</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <Prefer32Bit>false</Prefer32Bit>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Optimize>false</Optimize>
+    <Optimize>true</Optimize>
     <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <OutputPath>bin\$(MonoGamePlatform)\$(Platform)\$(Configuration)\</OutputPath>
-    <DefineConstants>LINUX</DefineConstants>
-    <Optimize>true</Optimize>
+    <DefineConstants>TRACE;DEBUG;LINUX</DefineConstants>
+    <Optimize>false</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
@@ -107,9 +107,11 @@
     <Compile Include="src\DAE.cs" />
     <Compile Include="src\CharToScreen.cs" />
     <Compile Include="src\EC.cs" />
+    <Compile Include="src\Effects\Bulle.cs" />
     <Compile Include="src\Effects\LoadingScreen.cs" />
     <Compile Include="src\Effects\PAX.cs" />
     <Compile Include="src\Effects\SunBeam.cs" />
+    <Compile Include="src\Effects\Trail.cs" />
     <Compile Include="src\kenuno\Execee.cs" />
     <Compile Include="src\kenuno\Mlink.cs" />
     <Compile Include="src\kenuno\Msetfst.cs" />
@@ -117,6 +119,7 @@
     <Compile Include="src\kenuno\ReadBar.cs" />
     <Compile Include="src\kenuno\RelocKH2.cs" />
     <Compile Include="src\kenuno\tocs.rc1.cs" />
+    <Compile Include="src\MAP.cs" />
     <Compile Include="src\MAPSpecies.cs" />
     <Compile Include="src\Model.cs" />
     <Compile Include="src\Moveset.cs" />
@@ -126,7 +129,9 @@
     <Compile Include="src\ScaRoTra.cs" />
     <Compile Include="src\Scene.cs" />
     <Compile Include="src\Skeleton.cs" />
+    <Compile Include="src\Spawn.cs" />
     <Compile Include="src\SrkBinary.cs" />
+    <Compile Include="src\SrkFont.cs" />
     <Compile Include="src\SrkTimer.cs" />
     <Compile Include="src\TexturePatch.cs" />
   </ItemGroup>
@@ -146,11 +151,11 @@
     <Reference Include="MonoGame.Framework">
       <HintPath>$(MonoGameInstallDirectory)\MonoGame\v3.0\Assemblies\DesktopGL\MonoGame.Framework.dll</HintPath>
     </Reference>
-    <Reference Include="OpenTK, Version=3.0.1.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
-      <HintPath>..\packages\OpenTK.3.0.1\lib\net20\OpenTK.dll</HintPath>
+    <Reference Include="OpenTK, Version=3.1.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
+      <HintPath>..\packages\OpenTK.3.1.0\lib\net20\OpenTK.dll</HintPath>
     </Reference>
-    <Reference Include="SharpDX, Version=4.2.0.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
-      <HintPath>..\packages\SharpDX.4.2.0\lib\net45\SharpDX.dll</HintPath>
+    <Reference Include="SharpDX, Version=2.6.3.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
+      <HintPath>$(SharpDXPackageBinDir)\SharpDX.dll</HintPath>
     </Reference>
     <Reference Include="SharpDX.XInput, Version=2.6.3.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
       <HintPath>$(SharpDXPackageBinDir)\SharpDX.XInput.dll</HintPath>
@@ -225,6 +230,13 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\MonoGame\v3.0\MonoGame.Content.Builder.targets" />
+  <Import Project="..\packages\SharpDX.2.6.3\build\SharpDX.targets" Condition="Exists('..\packages\SharpDX.2.6.3\build\SharpDX.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>Ce projet fait référence à des packages NuGet qui sont manquants sur cet ordinateur. Utilisez l'option de restauration des packages NuGet pour les télécharger. Pour plus d'informations, consultez http://go.microsoft.com/fwlink/?LinkID=322105. Le fichier manquant est : {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\SharpDX.2.6.3\build\SharpDX.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SharpDX.2.6.3\build\SharpDX.targets'))" />
+  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

@@ -1,0 +1,185 @@
+DAE d = new DAE(@"D:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\Content\Effects\Visual\SavePoint\p1\p1.dae");
+			d.Parse();
+			//d.ExportBin();
+
+			FileStream fs1 = new FileStream(@"D:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\Content\Effects\Visual\SavePoint\p1\MSET\move_000.bin", FileMode.Create);
+			BinaryWriter wr1 = new BinaryWriter(fs1);
+
+			FileStream fs2 = new FileStream(@"D:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\Content\Effects\Visual\SavePoint\p1\MSET\move_000.frames", FileMode.Create);
+			BinaryWriter wr2 = new BinaryWriter(fs2);
+
+			Vector3[] vects = new Vector3[d.Skeleton.Bones.Count];
+			float[] scales = new float[d.Skeleton.Bones.Count];
+
+			for (int i = 0; i < vects.Length; i++)
+			{
+				vects[i] = Vector3.Zero;
+				scales[i] = 0f;
+			}
+			float frames = 500; //430
+
+			wr1.Write((int)frames);
+			wr1.Write(0);
+			wr1.Write(0xFF000000);
+			wr1.Write(0);
+			int cnt = 0;
+			int oldi = 0;
+
+			for (oldi = 0; true; oldi++)
+			{
+				if (oldi % 10 == 0)
+				{
+					for (int j = d.Skeleton.Bones.Count - 1; j > 0; j--)
+					{
+						vects[j].X = 1f * vects[j - 1].X;
+						vects[j].Y = 1f * vects[j - 1].Y;
+						vects[j].Z = 1f * vects[j - 1].Z;
+						scales[j] = 1f * scales[j - 1];
+					}
+					cnt++;
+				}
+
+				Vector3 vv = new Vector3(0, 50f * (float)Math.Sin(((oldi / 500f)) * MainGame.PI * 4.008021155f), 0);
+				vects[0] = vv;
+
+				if (scales[0] < 1)
+					scales[0] += 0.1f;
+
+				if (oldi % 10 == 5 && cnt == d.Skeleton.Bones.Count)
+				{
+					break;
+				}
+			}
+			
+			List<Vector3>[] vectos = new List<Vector3>[d.Skeleton.Bones.Count];
+			List<float>[] scals = new List<float>[d.Skeleton.Bones.Count];
+			int[] indPrev = new int[d.Skeleton.Bones.Count];
+
+			for (int j = 0; j < d.Skeleton.Bones.Count; j++)
+			{
+				vectos[j] = new List<Vector3>(0);
+				scals[j] = new List<float>(0);
+				indPrev[j] = 0;
+			}
+
+			for (int i = 0; i < frames; i++)
+			{
+				if (i % 10 == 0)
+				{
+					for (int j = d.Skeleton.Bones.Count - 1; j > 0; j--)
+					{
+						vects[j].X = 1f * vects[j - 1].X;
+						vects[j].Y = 1f * vects[j - 1].Y;
+						vects[j].Z = 1f * vects[j - 1].Z;
+						scales[j] = 1f * scales[j - 1];
+					}
+				}
+
+				Vector3 vv = new Vector3(0, 50f * (float)Math.Sin((((i + oldi) / 500f)) * MainGame.PI * 4.008021155f), 0);
+				vects[0] = vv;
+
+				if (scales[0] < 1)
+					scales[0] += 0.05f;
+
+				for (int j = 0; j < d.Skeleton.Bones.Count; j++)
+				{
+					if (j == 0)
+					{
+
+					}
+					else
+					{
+						scals[j].Add(scales[j - 1]);
+						vectos[j].Add(vects[j - 1]);
+					}
+				}
+
+			}
+
+			for (int h = 0; h < 100; h++)
+			for (int i=1;i< vectos.Length; i++)
+			{
+				for (int j = 1; j < vectos[i].Count; j++)
+				{
+					Vector3 prev = vectos[i][(j - 1) % vectos[i].Count];
+					Vector3 next = vectos[i][(j + 1)% vectos[i].Count];
+					Vector3 v3 = (prev + next) / 2f;
+					vectos[i][j] = v3;
+				}
+			}
+			
+			
+
+
+
+			for (int i = 0; i < frames; i++)
+			{
+
+				float v1 = (float)(Math.Sin((i / 250f) * Math.PI) + 1) / 2f;
+				float v2 = 1 - v1;
+
+				wr2.Write((ushort)11);
+				wr2.Write((ushort)0);
+				wr2.Write(1.000f * v1 + 0.745f * v2);
+
+				wr2.Write((ushort)12);
+				wr2.Write((ushort)0);
+				wr2.Write(0.999f * v1 + 1.000f * v2);
+
+				wr2.Write((ushort)13);
+				wr2.Write((ushort)0);
+				wr2.Write(0.745f * v1 + 0.982f * v2);
+
+				wr2.Write((ushort)11);
+				wr2.Write((ushort)1);
+				wr2.Write(1.000f * v1 + 0.745f * v2);
+
+				wr2.Write((ushort)12);
+				wr2.Write((ushort)1);
+				wr2.Write(0.999f * v1 + 1.000f * v2);
+
+				wr2.Write((ushort)13);
+				wr2.Write((ushort)1);
+				wr2.Write(0.745f * v1 + 0.982f * v2);
+
+				wr2.Write(-1);
+				
+				for (int j = 0; j < d.Skeleton.Bones.Count; j++)
+				{
+					Matrix m = d.Skeleton.Bones[j].LocalMatrix;
+					if (j==0)
+					{
+						m = Matrix.CreateRotationY(-((-499f + i)/ 500f) *MainGame.PI*10f);
+					}
+					else
+					{
+						ScaRoTra srt = new ScaRoTra(m);
+						m = Matrix.CreateScale(scals[j][indPrev[j]]) * Matrix.CreateTranslation(new Vector3(srt.TranslateX, srt.TranslateY, srt.TranslateZ) + vectos[j][indPrev[j]]);
+
+
+						//m *= Matrix.CreateTranslation(vectos[j][indPrev[j]]);
+						indPrev[j]++;
+					}
+					wr1.Write(m.M11);
+					wr1.Write(m.M12);
+					wr1.Write(m.M13);
+					wr1.Write(m.M14);
+					wr1.Write(m.M21);
+					wr1.Write(m.M22);
+					wr1.Write(m.M23);
+					wr1.Write(m.M24);
+					wr1.Write(m.M31);
+					wr1.Write(m.M32);
+					wr1.Write(m.M33);
+					wr1.Write(m.M34);
+					wr1.Write(m.M41);
+					wr1.Write(m.M42);
+					wr1.Write(m.M43);
+					wr1.Write(m.M44);
+				}
+			}
+
+			wr1.Close();
+			fs1.Close();
+			wr2.Close();
+			fs2.Close();

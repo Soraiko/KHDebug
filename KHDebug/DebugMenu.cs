@@ -16,6 +16,7 @@ namespace KHDebug
         public static int MaxLineSize = 80;
         public static int Count = -1;
         public static string[] Lines;
+		//public static Model mdlRecord;
 
         public static void WriteLine(int text)
         {
@@ -60,28 +61,60 @@ namespace KHDebug
        public static int OpacityCountDown = 0;
 
         public static void Update()
-        {
-            if (Lines == null)
-                return;
+		{
+			//if (Lines == null)
+			//   return;
+			if (PAXCaster.PAX_Instances.Count < 2)
+				return;
+			Model mdl = Program.game.mainCamera.Target;// PAXCaster.PAX_Instances[PAXCaster.PAX_Instances.Count - 2].daeFile;
 
-            /*var mdl = Program.game.mainCamera.Target;
-            var mset = Program.game.mainCamera.Target.Links[0] as Moveset;
-            CharToScreen.WriteText("Target              :" + mdl.Name, 5, 5, Color.White, Color.Black);
-            CharToScreen.WriteText("_____________________", 5, 6, Color.White, Color.Black);
-            CharToScreen.WriteText("X                   :" + mdl.Location.X.ToString(), 5, 7, Color.White, Color.Black);
-            CharToScreen.WriteText("Y                   :" + mdl.Location.Y.ToString(), 5, 8, Color.White, Color.Black);
-            CharToScreen.WriteText("Z                   :" + mdl.Location.Z.ToString(), 5, 9, Color.White, Color.Black);
-            CharToScreen.WriteText("_____________________", 5, 10, Color.White, Color.Black);
+			if (mdl == null)
+			   return;
 
-            CharToScreen.WriteText("\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0", 5, 11, Color.White, Color.Transparent);
-            CharToScreen.WriteText("Playing index       :"+ mset.PlayingIndex, 5, 11, Color.White, Color.Black);
-            CharToScreen.WriteText("\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0", 5, 12, Color.White, Color.Transparent);
-            CharToScreen.WriteText("Playing frame       :" + mset.PlayingFrame.ToString() + " / " + mset.MaxTick.ToString(), 5, 12, Color.White, Color.Black);
-            CharToScreen.WriteText("\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0", 5, 13, Color.White, Color.Transparent);
-            CharToScreen.WriteText("Control State       :" + mdl.cState.ToString(), 5, 13, Color.White, Color.Black);
-            CharToScreen.WriteText("\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0", 5, 14, Color.White, Color.Transparent);
-            CharToScreen.WriteText("Animation State       :" + mdl.pState.ToString(), 5, 14, Color.White, Color.Black);*/
-            for (int i=0;i<MaxLineCount;i++)
+			/*for (int i = 0; i < MainGame.ResourceFiles.Count; i++)
+			{
+				if (MainGame.ResourceFiles[i] is Model && MainGame.ResourceFiles[i].Name == "F_TT010_SORA")
+				{
+					mdl = MainGame.ResourceFiles[i] as Model;
+				}
+			}*/
+
+			/*if (Program.game.MapSet && Program.game.Map.Supp != null)
+            for (int i = 0; i < Program.game.Map.Supp.Count; i++)
+            {
+                if (Program.game.Map.Supp[i] != null && Program.game.Map.Supp[i].Name.Contains("arage"))
+                {
+                    mdl = Program.game.Map.Supp[i];
+                }
+            }*/
+
+			var mset = mdl.Links[0] as Moveset;
+						CharToScreen.WriteText("Target              :" + mdl.Name, 5, 5, Color.White, Color.Black);
+						CharToScreen.WriteText("_____________________", 5, 6, Color.White, Color.Black);
+						CharToScreen.WriteText("X                   :" + mdl.Location.X.ToString(), 5, 7, Color.White, Color.Black);
+						CharToScreen.WriteText("Y                   :" + mdl.Location.Y.ToString(), 5, 8, Color.White, Color.Black);
+						CharToScreen.WriteText("Z                   :" + mdl.Location.Z.ToString(), 5, 9, Color.White, Color.Black);
+						CharToScreen.WriteText("_____________________", 5, 10, Color.White, Color.Black);
+						CharToScreen.WriteText("Rot                 :" + mdl.Rotate.ToString(), 5, 11, Color.White, Color.Black);
+
+						CharToScreen.WriteText("\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0", 5, 12, Color.White, Color.Transparent);
+			CharToScreen.WriteText("Playing index       :" + mset.PlayingIndex, 5, 12, Color.White, Color.Black);
+			CharToScreen.WriteText("\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0", 5, 13, Color.White, Color.Transparent);
+			CharToScreen.WriteText("Next playing index       :" + mset.NextPlayingIndex, 5, 13, Color.White, Color.Black);
+			CharToScreen.WriteText("\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0", 5, 14, Color.White, Color.Transparent);
+			CharToScreen.WriteText("Playing frame       :" + mset.PlayingFrame.ToString() + " / " + mset.MaxTick.ToString(), 5, 14, Color.White, Color.Black);
+						CharToScreen.WriteText("\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0", 5, 15, Color.White, Color.Transparent);
+						CharToScreen.WriteText("Goto       :" + mdl.Goto.ToString(), 5, 15, Color.White, Color.Black);
+						CharToScreen.WriteText("\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0", 5, 16, Color.White, Color.Transparent);
+						CharToScreen.WriteText("Control State       :" + mdl.cState.ToString(), 5, 16, Color.White, Color.Black);
+						CharToScreen.WriteText("\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0", 5, 17, Color.White, Color.Transparent);
+						CharToScreen.WriteText("Animation State       :" + mdl.pState.ToString(), 5, 17, Color.White, Color.Black);
+						CharToScreen.WriteText("\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0", 5, 18, Color.White, Color.Transparent);
+						CharToScreen.WriteText("Interpolate       :" + mset.InterpolateFrameRate.ToString(), 5, 18, Color.White, Color.Black);
+			
+			
+			/*
+			for (int i=0;i<MaxLineCount;i++)
             {
                 CharToScreen.WriteText(Lines[i],5,5+i, White, Black);
             }
@@ -95,9 +128,9 @@ namespace KHDebug
                     Black.A -= 2;
                 else
                     Black.A = 0;
-            }
-        }
-        public static Color White = Color.White;
+			}*/
+		}
+		public static Color White = Color.White;
         public static Color Black = Color.Black;
         //
     }

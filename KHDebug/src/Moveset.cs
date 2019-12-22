@@ -45,9 +45,14 @@ namespace KHDebug
         public int land_ = 10;
         public int land1_ = 10;
         public int land2_ = -1;
-        public int guard_ = 11;
-        public int unguard_ = 12;
+        public int guarding_ = -1;
+        public int guard_ = -1;
+		public int unguarding_ = -1;
         public int jump_ = -1;
+
+        public int sora_doko_ = -1;
+        public int sora_matu_ = -1;
+        public int sora_mikke_ = -1;
 
         public int chat1_ = -1;
         public int chat2_ = -1;
@@ -62,11 +67,12 @@ namespace KHDebug
         public int chat11_ = -1;
         public int chat12_ = -1;
 
-        public int attack1_ = -1;
-        public int attack1Air_ = -1;
+		public int attack1_ = -1;
+		public int attack1Air_ = -1;
 
 
-        Moveset master;
+
+		Moveset master;
         public bool HasMaster = false;
 
         public Moveset Master
@@ -108,8 +114,13 @@ namespace KHDebug
             {
                 if (this.playingIndex == value)
                     return;
-                (this.Links[0] as Model).InactiveCount = 0;
-                this.NextPlayingIndex = -1;
+				Model mdl = (this.Links[0] as Model);
+				if (mdl == null)
+					return;
+				mdl.InactiveCount = 0;
+				lastECFrame = -1;
+
+				this.NextPlayingIndex = -1;
 
                 if (this.playingIndex != value && value > -1)
                 {
@@ -123,7 +134,7 @@ namespace KHDebug
                 }
                 
                 this.playingIndex = value;
-                if (false&&(this.Links[0] as Model) != null && Program.game.mainCamera.Target != null && (this.Links[0] as Model).ResourceIndex ==  Program.game.mainCamera.Target.ResourceIndex)
+                if (false&& mdl != null && Program.game.mainCamera.Target != null && mdl.ResourceIndex ==  Program.game.mainCamera.Target.ResourceIndex)
                 {
 
                         Console.Clear();
@@ -193,10 +204,12 @@ namespace KHDebug
         int lastECFrame = -1;
 
         public void UpdateEC(int index)
-        {
-            Model mdl = (this.Links[0] as Model);
+		{
+			Model mdl = (this.Links[0] as Model);
+			if (mdl == null)
+				return;
 
-            mdl.Mouth.f10Patching = false;
+			mdl.Mouth.f10Patching = false;
             mdl.Eyes.f10Patching = false;
             for (int i=0;i<mdl.Patches.Count;i++)
             {
@@ -223,12 +236,16 @@ namespace KHDebug
                     {
                         mdl.pState = (Model.State)2;
                         this.NextPlayingIndex = this.AtmospherePlayingIndex;
-                    }
-                    if (Ecs[i].ID == 3)
-                    {
-                        mdl.pState = (Model.State)3;
-                    }
-                    if (Ecs[i].ID == 247)
+					}
+					if (Ecs[i].ID == 3)
+					{
+						mdl.pState = (Model.State)3;
+					}
+					if (Ecs[i].ID == 26)
+					{
+						mdl.pState = (Model.State)26;
+					}
+					if (Ecs[i].ID == 247)
                     {
                         for (int p=0;p<Ecs[i].Data.Length/2;p++)
                         {
@@ -260,20 +277,21 @@ namespace KHDebug
                 {
                     if (Ecs[i].ID == 2)
                     {
-                        if (Ecs[i].Data.Length > 3)
+                        if (Ecs[i].Data.Length > 3 && (currFrame != lastECFrame || i != lastECIndex))
                         {
                             short ind = BitConverter.ToInt16(Ecs[i].Data,0);
                             if (100+ ind < this.Voices.Length)
                             Audio.Play(this.Voices[100+ ind], false, mdl,80);
-                        }
+							lastECIndex = i;
+						}
                     }
                     if (Ecs[i].ID == 8)
                     {
                         if (Ecs[i].Data.Length > 3)
                         {
                             ushort ind_ui2 = BitConverter.ToUInt16(Ecs[i].Data, 2);
-                            string fname = @"Content\Effects\Audio\Ambient\0x08\" + ind_ui2.ToString("X4") + ".wav";
-                            if (System.IO.File.Exists(fname) && currFrame != lastECFrame || i != lastECIndex)
+                            string fname = @"Content\Effects\Audio\Sounds\0x08\" + ind_ui2.ToString("X4") + ".wav";
+                            if (System.IO.File.Exists(fname) && (currFrame != lastECFrame || i != lastECIndex))
                             {
                                 Audio.Play(fname, false, mdl, 50);
                                 lastECIndex = i;
@@ -291,12 +309,57 @@ namespace KHDebug
                             }
                         }
                     }
+                    if (Ecs[i].ID == 252) //1 voice interrupt others
+                    {
+                        if (Ecs[i].Data.Length > 0 && Ecs[i].Data[0] < this.Voices.Length)
+                        {
+                            if (this.FrameStep >= 0 && (currFrame != lastECFrame || i != lastECIndex))
+                            {
+                                for (int k = 0; k < this.Voices.Length; k++)
+                                {
+                                    for (int l = 0; l < Audio.names.Count; l++)
+                                        if (Audio.names[l] == this.Voices[k])
+                                        {
+                                            Audio.effectInstances[l].Stop();
+                                        }
+                                }
+
+                                Audio.Play(this.Voices[Ecs[i].Data[0]], false, mdl, 50);
+                                lastECIndex = i;
+                            }
+                        }
+                    }
+                    if (Ecs[i].ID == 253 && currFrame != lastECFrame) //SetInteger
+                    {
+                        int valID = Program.game.Map.varIDs.IndexOf(BitConverter.ToUInt16(Ecs[i].Data, 0));
+                        int val = BitConverter.ToUInt16(Ecs[i].Data, 2);
+                        
+                        int ind_ = Program.game.Map.varIDs.IndexOf(valID);
+                        if (ind_ < 0)
+                        {
+                            Program.game.Map.varIDs.Add(valID);
+                            Program.game.Map.varValues.Add(val);
+                        }
+                        else
+                        {
+                            Program.game.Map.varValues[ind_] = val;
+                        }
+                    }
                     if (Ecs[i].ID == 254)
                     {
                         if (Ecs[i].Data.Length > 0 && Ecs[i].Data[0] < this.Voices.Length)
                         {
                             if (this.FrameStep<-0.00000001 && (currFrame != lastECFrame || i != lastECIndex))
                             {
+                                for (int k = 0; k < this.Voices.Length; k++)
+                                {
+                                    for (int l = 0; l < Audio.names.Count; l++)
+                                        if (Audio.names[l] == this.Voices[k])
+                                        {
+                                            Audio.effectInstances[l].Stop();
+                                        }
+                                }
+
                                 Audio.Play(this.Voices[Ecs[i].Data[0]], false, mdl, 50);
                                 lastECIndex = i;
                             }
@@ -315,22 +378,26 @@ namespace KHDebug
         
 
         public void ComputeAnimation()
-        {
-            if (this.HasMaster)
+		{
+			Model mdl = (this.Links[0] as Model);
+			if (mdl == null)
+				return;
+
+			if (this.HasMaster)
             {
                 this.interpolateAnimation = this.Master.interpolateAnimation;
                 this.InterpolateFrameRate = this.Master.InterpolateFrameRate;
 
                 this.ComputingFrame = this.Master.ComputingFrame;
-            }
+			}
 
 
-            if (this.IK)
+			if (this.IK)
                 this.PerformIK();
 
             this.GetFrameData();
 
-            (this.Links[0] as Model).RecreateVertexBuffer(true);
+			mdl.RecreateVertexBuffer(true);
             this.ComputingFrame++;
         }
 

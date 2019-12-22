@@ -96,7 +96,7 @@ namespace KHDebug
             texture = ResourceLoader.GetT2D(@"Content\Effects\Visual\LoadingScreen\texture.png"); 
             for (int i=0;i< vpnt.Length;i++)
             {
-                vpnt[i].Position = Vector3.Transform(vpnt[i].Position, Matrix.CreateScale(new Vector3(5f, 5f, 5f)));
+                vpnt[i].Position = Vector3.Transform(vpnt[i].Position, Matrix.CreateScale(5f));
             }
 
             dnewV = new Viewport();
@@ -107,28 +107,33 @@ namespace KHDebug
         
         static Viewport dnewV;
 
-        public static void Draw(GraphicsDeviceManager gcm, AlphaTestEffect at, BasicEffect be, RasterizerState rs, RasterizerState rsNoCull)
-        {
-            gcm.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+		static Matrix rot = Matrix.CreateRotationY(-0.1f);
+		static Matrix tranFo = Matrix.CreateTranslation(850f, -450f, 0);
+		static Matrix tranBa = Matrix.CreateTranslation(-850f, 450f, 0);
 
-            be.EnableDefaultLighting();
+		static Matrix beView = Matrix.CreateLookAt(new Vector3(0,0,100), Vector3.Zero, Vector3.Up);
+		static Matrix beProjection = Matrix.CreateOrthographic(1920f, 1080f, 0f, 1000f);
+
+		public static void Draw(GraphicsDeviceManager gcm, AlphaTestEffect at, BasicEffect be, RasterizerState rs, RasterizerState rsNoCull)
+        {
+            gcm.GraphicsDevice.DepthStencilState = DepthStencilState.None;
+
+			be.EnableDefaultLighting();
             be.DiffuseColor = (Color.White).ToVector3();
             be.SpecularColor = (Color.White * 0.5f).ToVector3();
             be.LightingEnabled = true;
             be.DirectionalLight0.Direction = new Vector3(0,0,-1);
             //be.PreferPerPixelLighting = true;
 
-            be.View = Matrix.CreateLookAt(new Vector3(0,0,100), Vector3.Zero, Vector3.Up);
-            be.Projection = Matrix.CreateOrthographic(1920f, 1080f, 0f, 1000f);
+            be.View = beView;
+            be.Projection = beProjection;
 
-            Matrix rot = Matrix.CreateRotationY(-0.1f);
             float ratio = 1.6f/Program.game.mainCamera.AspectRatio;
 
             Matrix scale = Matrix.CreateScale(new Vector3(ratio, 1, 1));
             Matrix scaleReverse = Matrix.CreateScale(new Vector3(1f/ ratio, 1, 1));
 
-            Matrix tranFo = Matrix.CreateTranslation(850f, -450f, 0);
-            Matrix tranBa = Matrix.CreateTranslation(-850f, 450f, 0);
+
             for (int i = 0; i < vpnt.Length; i++)
             {
                 vpnt[i].Normal = Vector3.Transform(vpnt[i].Normal, rot);

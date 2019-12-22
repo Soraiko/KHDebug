@@ -40,7 +40,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked; OnlyBelowVersion: 6.1; Check: not IsAdminInstallMode
 
 [Files]
-Source: "E:\Program Files (x86)\KHDebug\KHDebugLauncher.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "D:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\KHDebugLauncher.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "D:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\7zip443.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "D:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\BrandonPotter.XBox.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "D:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\Custeera.dll"; DestDir: "{app}"; Flags: ignoreversion
@@ -52,8 +52,14 @@ Source: "D:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\MonoGame.Framewor
 Source: "D:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\OpenTK.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "D:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\SharpDX.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "D:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\SharpDX.XInput.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\x64\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "D:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\x86\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "D:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\x64\libopenal.so.1"; DestDir: "{app}\x64"; Flags: ignoreversion
+Source: "D:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\x64\libSDL2-2.0.so.0"; DestDir: "{app}\x64"; Flags: ignoreversion
+Source: "D:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\x64\SDL2.dll"; DestDir: "{app}\x64"; Flags: ignoreversion
+Source: "D:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\x64\soft_oal.dll"; DestDir: "{app}\x64"; Flags: ignoreversion
+Source: "D:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\x86\libopenal.so.1"; DestDir: "{app}\x86"; Flags: ignoreversion
+Source: "D:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\x86\libSDL2-2.0.so.0"; DestDir: "{app}\x86"; Flags: ignoreversion
+Source: "D:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\x86\SDL2.dll"; DestDir: "{app}\x86"; Flags: ignoreversion
+Source: "D:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\x86\soft_oal.dll"; DestDir: "{app}\x86"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
@@ -62,5 +68,5 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: de
 Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: quicklaunchicon
 
 [Run]
-Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent unchecked
 

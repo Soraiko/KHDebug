@@ -142,7 +142,7 @@ namespace KHDebug
             gcm.GraphicsDevice.RasterizerState = rs;
             
 
-            gcm.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
+            //gcm.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
 
             be.View = Matrix.CreateLookAt(new Vector3(0,0, 1), Vector3.Zero, Vector3.Up);
             be.Projection = Matrix.CreateOrthographic(1920f, 1080f, 0f, 10f);
@@ -160,7 +160,7 @@ namespace KHDebug
             gcm.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
             gcm.GraphicsDevice.RasterizerState = RasterizerState.CullClockwise;
 
-            gcm.GraphicsDevice.SamplerStates[0] = MainGame.DefaultSmaplerState;
+            //gcm.GraphicsDevice.SamplerStates[0] = MainGame.DefaultSmaplerState;
             be.View = at.View;
             be.Projection = at.Projection;
         }

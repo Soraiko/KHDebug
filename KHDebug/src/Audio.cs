@@ -14,8 +14,12 @@ namespace KHDebug
     public static class Audio
     {
         public static string CurrentAmbient = "";
+        public static int CurrentAmbientIndex = -1;
         public static List<SoundEffect> effects;
         public static List<SoundEffectInstance> effectInstances;
+
+        public static List<float[]> DestVolumes;
+
         public static List<bool> loops;
         public static List<string> filenames;
         public static List<int> instaceCounts;
@@ -24,16 +28,16 @@ namespace KHDebug
         public static List<byte[]> buffers;
         public static List<MemoryStream> streams;
         public static List<Model> emmiters;
-        public static System.Threading.Thread loopThread;
-        static Random rnd;
-
+		public static System.Threading.Thread loopThread;
+		public static Random rnd;
+        public static long oldTick = 0;
         public static void InitAudio()
         {
             if (loopThread == null)
             {
                 loops = new List<bool>(0);
                 effectInstances = new List<SoundEffectInstance>(0);
-
+                DestVolumes = new List<float[]>(0);
                 effects = new List<SoundEffect>(0);
                 loops = new List<bool>(0);
                 instaceCounts = new List<int>(0);
@@ -43,46 +47,74 @@ namespace KHDebug
                 buffers = new List<byte[]>(0);
                 streams = new List<MemoryStream>(0);
                 emmiters = new List<Model>(0);
-                rnd = new Random(DateTime.Now.Millisecond);
+				rnd = new Random(DateTime.Now.Millisecond);
 
                 loopThread = new System.Threading.Thread(() => {
 
                     while (true)
                     {
-                        for (int i = 0; i < loops.Count; i++)
-                        {
-                            if (effectInstances[i] != null && emmiters[i] != null && Program.game.mainCamera.Target != null)
+						/*if (true||oldTick != Program.game.ticks)
+                        {*/
+						for (int i = 0; i < loops.Count; i++)
+						{
+							if (effectInstances[i] == null)
+							{
+								loops.RemoveAt(i);
+								names.RemoveAt(i);
+								playingMoments.RemoveAt(i);
+								effectInstances.RemoveAt(i);
+								DestVolumes.RemoveAt(i);
+								emmiters.RemoveAt(i);
+								CurrentAmbientIndex = names.IndexOf(CurrentAmbient);
+								i--;
+							}
+						}
+							for (int i = 0; i < loops.Count; i++)
                             {
-                                AudioEmitter emi = new AudioEmitter
-                                {
-                                    Position = (emmiters[i].Location + Vector3.Transform((emmiters[i].MinVertex + emmiters[i].MaxVertex) / 2f, Matrix.CreateRotationY(emmiters[i].Rotate))) / 200f
-                                };
-                                AudioListener reci = new AudioListener
-                                {
-                                    //reci.Velocity = new Vector3((float)(Program.game.mainCamera.Target.Joystick * Math.Sin(Program.game.mainCamera.Target.Rotate)), 0, (float)(Program.game.mainCamera.Target.Joystick * Math.Cos(Program.game.mainCamera.Target.Rotate)));
-                                    Position = (Program.game.mainCamera.Target.Location + Vector3.Transform((Program.game.mainCamera.Target.MinVertex + Program.game.mainCamera.Target.MaxVertex) / 2f, Matrix.CreateRotationY(Program.game.mainCamera.Target.Rotate))) / 200f
-                                };
-                                emi.Position -= reci.Position;
-                                emi.Position = Vector3.Transform(emi.Position, Matrix.CreateRotationY(-Program.game.mainCamera.Yaw));
-                                //emi.Position += reci.Position;
-                                reci.Position = Vector3.Zero;
-                                effectInstances[i].Apply3D(reci, emi);
-                            }
-                        }
-                        /*for (int i = 0; i < loops.Count; i++)
-                        {
-                            if (effectInstances[i] !=null && effectInstances[i].State == SoundState.Stopped)
-                            {
-                                loops.RemoveAt(i);
-                                if (effectInstances[i] !=null)
-                                effectInstances[i].Dispose();
-                                effectInstances[i] = null;
-                                effectInstances.RemoveAt(i);
-                                names.RemoveAt(i);
-                                emmiters.RemoveAt(i);
-                                i--;
-                            }
-                        }*/
+								if (i == Audio.CurrentAmbientIndex)
+								continue;
+								var efi = effectInstances[i];
+								if (efi == null)
+									continue;
+								Model target = Program.game.mainCamera.Target;
+
+
+								if (emmiters[i] != null && target != null)
+                                    {
+                                        AudioEmitter emi = new AudioEmitter
+                                        {
+                                            Position = 
+                                            (emmiters[i].Location) / 200f
+                                        };
+										if (!Single.IsNaN(emmiters[i].MinVertex.X))
+											emi.Position += Vector3.Transform((emmiters[i].MinVertex + emmiters[i].MaxVertex) / 2f, emmiters[i].Rotate_matrix) / 200f;
+                                        AudioListener reci = new AudioListener
+                                        {
+                                            //reci.Velocity = new Vector3((float)(Program.game.mainCamera.Target.Joystick * Math.Sin(Program.game.mainCamera.Target.Rotate)), 0, (float)(Program.game.mainCamera.Target.Joystick * Math.Cos(Program.game.mainCamera.Target.Rotate)));
+                                            Position = target.Location / 200f
+                                        };
+										if (!Single.IsNaN(target.MinVertex.X))
+											reci.Position += Vector3.Transform((target.MinVertex + target.MaxVertex) / 2f, target.Rotate_matrix) / 200f;
+
+										emi.Position -= reci.Position;
+                                        emi.Position = Vector3.Transform(emi.Position, Program.game.mainCamera.Yaw_backwards_matrix);
+										
+
+										//emi.Position += reci.Position;
+										reci.Position = Vector3.Zero;
+
+
+										efi.Apply3D(reci, emi);
+                                }
+
+								if (DestVolumes[i][0] < 0)
+								{
+									DestVolumes[i][0] *= -1f;
+									efi.Volume = DestVolumes[i][0];
+								}
+						}
+                        /*   oldTick = Program.game.ticks;
+                       }*/
                     }
                 });
                 loopThread.Start();
@@ -91,24 +123,69 @@ namespace KHDebug
 
         public static void UpdateAmbient()
         {
-            if (CurrentAmbient.Length<1)
-                return;
-            int ind = -1;
+			if (Audio.NextBGM.Length > 0)
+			{
+				if (names.IndexOf(Audio.NextBGM)<0)
+				Audio.Play(Audio.NextBGM, true, null, 100);
+				Audio.BGM = Audio.NextBGM;
+				Audio.NextBGM = "";
+			}
+
+			int ind = -1;
             for (int i=0;i<names.Count;i++)
-            {
-                if (names[i]== CurrentAmbient)
-                {
-                    ind = i;
-                }
-                else
-                if (effectInstances[i].Volume>0 && !names[i].ToLower().Contains("bgm") && names[i].Contains(Program.game.Map.Name))
-                {
-                    effectInstances[i].Volume += ((0f) - effectInstances[i].Volume) / 30f;
-                }
-            }
-            if (ind<0)
+			{
+				var efi = effectInstances[i];
+				var ff = DestVolumes[i];
+				var emii = emmiters[i];
+				string name = names[i];
+				if (efi == null)
+					continue;
+
+				if (name.ToLower().Contains("bgm"))
+				{
+					if (Program.game.WaitMap && efi.Volume > 0)
+					{
+						efi.Volume += ((0f) - efi.Volume) / 50f;
+						if (efi.Volume < 0.001)
+							efi.Volume = 0;
+					}
+					else if (name!= Audio.BGM)
+					{
+						efi = null;
+					}
+				}
+				else
+				if (name.Length> 22 && name[22]=='A' && emii == null)
+				{
+					//Console.WriteLine(name+"   "+ efi.Volume);
+					if (name == CurrentAmbient)
+					{
+						ind = i;
+						if (ff[1] < 1.01f)
+							ff[1] = 50f;
+					}
+
+					if (Program.game.WaitMap)
+					{
+						if (efi.Volume > 0)
+						{
+							efi.Volume += ((0f) - efi.Volume) / 50f;
+						}
+					}
+					else if (!(ff[0] < 0))
+					{
+						efi.Volume += (ff[0] - efi.Volume) / ff[1];
+					}
+					if (!(ff[0]<0) && ff[0] < efi.Volume && efi.Volume < 0.000001)
+						efi.Volume = 0;
+				}
+			}
+			if (CurrentAmbient.Length < 1)
+				return;
+			if (ind<0)
             {
                 Audio.Play(CurrentAmbient, true, null, 0);
+				ind = names.IndexOf(CurrentAmbient);
             }
         }
 
@@ -128,13 +205,23 @@ namespace KHDebug
             }
         }
         public static int moment = 0;
+        public static string NextBGM = "";
+        public static string BGM = "";
 
-        public static void Play(string path, bool loop, Model emmiter, byte vol)
+		public static void Play(string path, bool loop, Model emmiter, byte vol)
         {
             if (path.Contains(";"))
             {
                 string[] spli = path.Split(';');
                 path = spli[rnd.Next(0, spli.Length)];
+            }
+
+            bool wavLoop = false;
+            if (path.Contains("wavloop"))
+            {
+                wavLoop = true;
+                path = path.Remove(path.Length - 4, 4);
+                loop = true;
             }
 
             int index = filenames.IndexOf(path);
@@ -166,34 +253,90 @@ namespace KHDebug
                     //Console.WriteLine(ex.ToString());
                 }
             }
-            instaceCounts[index]++;
+
 
             try
             {
-                if (instaceCounts[index] < 4)
+                int stoppedFound = -1;
+                for (int i = 0; i < names.Count; i++)
                 {
-                    var se = effects[index].CreateInstance();
-                    se.Volume = vol / 400f;
-                    if (emmiter !=null)
+                    if (names[i] == path)
+                    {
+                        if (wavLoop)
+                            return;
+                        if (effectInstances[i].State != SoundState.Playing)
+                        {
+                            stoppedFound = i;
+                            break;
+                        }
+                    }
+                }
+                instaceCounts[index]++;
+                if (stoppedFound > -1)
+                {
+					Model target = Program.game.mainCamera.Target;
+					if (emmiter != null && target!= null)
                     {
                         AudioEmitter emi = new AudioEmitter
                         {
-                            Position = new Vector3(Single.MaxValue, 0, 0)
+                            Position = 
+                            (emmiter.Location + Vector3.Transform((emmiter.MinVertex + emmiter.MaxVertex) / 2f, emmiter.Rotate_matrix)) / 200f
                         };
                         AudioListener reci = new AudioListener
                         {
-                            Position = Vector3.Zero
+                            Position = (target.Location + Vector3.Transform((target.MinVertex + target.MaxVertex) / 2f, target.Rotate_matrix)) / 200f
                         };
+                        emi.Position -= reci.Position;
+                        emi.Position = Vector3.Transform(emi.Position, Program.game.mainCamera.Yaw_backwards_matrix);
+                        reci.Position = Vector3.Zero;
+
+                        effectInstances[stoppedFound].Apply3D(reci, emi);
+                    }
+
+					DestVolumes[stoppedFound][0] = (-vol / 400f);
+					DestVolumes[stoppedFound][1] = 1f;
+					effectInstances[stoppedFound].Volume = 0f;
+					effectInstances[stoppedFound].Play();
+                    playingMoments[stoppedFound] = moment;
+                }
+                else
+
+
+                if (instaceCounts[index] < 4)
+                {
+                    var se = effects[index].CreateInstance();
+
+					Model target = Program.game.mainCamera.Target;
+					if (emmiter != null && target != null)
+					{
+                        AudioEmitter emi = new AudioEmitter
+                        {
+                            Position = 
+                            (emmiter.Location + Vector3.Transform((emmiter.MinVertex + emmiter.MaxVertex) / 2f, emmiter.Rotate_matrix)) / 200f
+                        };
+                        AudioListener reci = new AudioListener
+                        {
+                            Position = (target.Location + Vector3.Transform((target.MinVertex + target.MaxVertex) / 2f, target.Rotate_matrix)) / 200f
+                        };
+                        emi.Position -= reci.Position;
+                        emi.Position = Vector3.Transform(emi.Position, Program.game.mainCamera.Yaw_backwards_matrix);
+                        reci.Position = Vector3.Zero;
+
                         se.Apply3D(reci, emi);
                     }
-                    se.Play();
-                    se.IsLooped = loop;
-                    names.Add(path);
 
-                    playingMoments.Add(moment);
+                    se.IsLooped = loop;
+					se.Volume = 0f;
+					se.Play();
+                    names.Add(path);
+					CurrentAmbientIndex = names.IndexOf(CurrentAmbient);
+
+					playingMoments.Add(moment);
 
                     effectInstances.Add(se);
-                    emmiters.Add(emmiter);
+                    DestVolumes.Add(new float[] { -vol / 400f, 1f });
+
+					emmiters.Add(emmiter);
                     loops.Add(loop);
                 }
                 else
@@ -203,7 +346,7 @@ namespace KHDebug
 
                     for (int i=0;i< names.Count;i++)
                     {
-                        if (names[i] == path && playingMoments[i] < earliest)
+						if (names[i] == path && playingMoments[i] < earliest)
                         {
                             earliest = playingMoments[i];
                             earlyIndex = i;
@@ -212,14 +355,37 @@ namespace KHDebug
                     if (earlyIndex>-1)
                     {
                         effectInstances[earlyIndex].Stop();
-                        effectInstances[earlyIndex].Play();
+
+						Model target = Program.game.mainCamera.Target;
+						if (emmiter != null && target != null)
+						{
+                            AudioEmitter emi = new AudioEmitter
+                            {
+                                Position = 
+                                (emmiter.Location + Vector3.Transform((emmiter.MinVertex + emmiter.MaxVertex) / 2f, emmiter.Rotate_matrix)) / 200f
+                            };
+                            AudioListener reci = new AudioListener
+                            {
+                                Position = (target.Location + Vector3.Transform((target.MinVertex + target.MaxVertex) / 2f, target.Rotate_matrix)) / 200f
+                            };
+                            emi.Position -= reci.Position;
+                            emi.Position = Vector3.Transform(emi.Position, Program.game.mainCamera.Yaw_backwards_matrix);
+                            reci.Position = Vector3.Zero;
+
+                            effectInstances[earlyIndex].Apply3D(reci, emi);
+                        }
+
+                        DestVolumes[earlyIndex][0] = (-vol / 400f);
+                        DestVolumes[earlyIndex][1] = 1f;
+						effectInstances[earlyIndex].Volume = 0f;
+						effectInstances[earlyIndex].Play();
                         playingMoments[earlyIndex] = moment;
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
+                //Console.WriteLine(ex.ToString());
             }
             moment++;
         }

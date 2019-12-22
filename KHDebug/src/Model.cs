@@ -12,19 +12,50 @@ namespace KHDebug
 {
     public class Model : Resource
     {
-        public bool Figed = false;
+		public float Masse = 0;
+		public bool MasseSet = false;
+
+		bool npc = false;
+		public bool NPC
+		{
+			get
+			{
+				return this.npc;
+			}
+			set
+			{
+				if (value)
+					this.TurnStepScale = 0.333f;
+				else
+					this.TurnStepScale = 1f;
+				this.npc = value;
+			}
+		}
+		public bool NPCReached = false;
+		public int NPCNewReach = 0;
+
+		public List<int> Attachments = new List<int>(0);
+        public bool Attached = false;
+        public List<Model> AttachmentsModels = new List<Model>(0);
+
+		public float WalkSpeed_ = 0;
+		public float RunSpeed_ = 0;
+
+		public float WalkSpeed = 120;
+		public float RunSpeed = 480;
+		public float InitialWalkSpeed = 120;
+		public float InitialRunSpeed = 480;
+
+		public bool Figed = false;
         public Area Area;
         public bool IsSky = false;
-        public List<int> varIDs;
-        public List<bool> varValues;
         public Model Keyblade;
         public Vector3 Goto = new Vector3(Single.NaN,0,0);
-        public Vector3 BlockedGoto = new Vector3(Single.NaN,0,0);
         public int[] MeshGroups = new int[0];
 
         public Vector3 MinVertex = new Vector3(Single.NaN, 0, 0);
-        public Vector3 MaxVertex = new Vector3(Single.NaN, 0, 0);
-        public float Epaisseur = 50f;
+        public Vector3 MaxVertex = new Vector3(Single.NaN, 1000, 0);
+        public float Epaisseur = 0f;
 
         public float JumpMax = 380f;
         public float JumpMin = 160f;
@@ -33,132 +64,162 @@ namespace KHDebug
 
         public float StairHeight = 60f;
 
-        public SunBeam sunbeam;
-        public static string[] sunbeamList;
-        public float FogStart = 0f;
-        public float FogEnd = 0f;
-        public Microsoft.Xna.Framework.Vector3 FogColor = Color.Transparent.ToVector3();
         public void Parse()
-        {
-            this.ResourceIndex = Array.IndexOf(Resource.ResourceIndices, this.FileName.Split('.')[0]);
+		{
+			if (File.Exists(Path.GetDirectoryName(this.FileName) + @"\" + "collision.obj"))
+			{
+				this.Links.Add(new Collision(Path.GetDirectoryName(this.FileName) + @"\" + "collision.obj"));
+			}
+
+			if (File.Exists(Path.GetDirectoryName(this.FileName) + @"\" + Path.GetFileNameWithoutExtension(this.FileName) + ".obj"))
+			{
+				this.Collision = new Collision(Path.GetDirectoryName(this.FileName) + @"\" + Path.GetFileNameWithoutExtension(this.FileName) + ".obj");
+			}
+
+			if (File.Exists(Path.GetDirectoryName(this.FileName) + @"\" + "eyes.txt"))
+			{
+				this.Eyes = new TexturePatch(Path.GetDirectoryName(this.FileName) + @"\" + "eyes.txt", this);
+			}
+			if (File.Exists(Path.GetDirectoryName(this.FileName) + @"\" + "mouth.txt"))
+			{
+				this.Mouth = new TexturePatch(Path.GetDirectoryName(this.FileName) + @"\" + "mouth.txt", this);
+			}
+			for (int i = 0; i < 10; i++)
+			{
+				if (File.Exists(Path.GetDirectoryName(this.FileName) + @"\" + "patch" + i + ".txt"))
+				{
+					this.Patches.Add(new TexturePatch(Path.GetDirectoryName(this.FileName) + @"\" + "patch" + i + ".txt", this));
+				}
+			}
+			this.ResourceIndex = Array.IndexOf(Resource.ResourceIndices, this.FileName.Split('.')[0]+".");
             this.IsSky =  this.Name.Contains("SKY");
 
-            if (this is DAE)
-                (this as DAE).Parse();
-            if (this is BinaryModel)
-                (this as BinaryModel).Parse();
+			if (this is DAE)
+				(this as DAE).Parse();
+			else if (this is MAP)
+			{
+				(this as MAP).Parse();
+				return;
+			}
+			else if (this is BinaryModel)
+				(this as BinaryModel).Parse();
 
-            for (int i = 0; i < this.Supp.Count; i++)
-                for (int j = i+1; j < this.Supp.Count; j++)
-                {
-                    if (this.Supp[j].ZIndex < this.Supp[i].ZIndex)
-                    {
-                        var curr = this.Supp[j];
-                        this.Supp.RemoveAt(j);
-                        this.Supp.Insert(0, curr);
-                        var currM = this.SuppMsets[j];
-                        this.SuppMsets.RemoveAt(j);
-                        this.SuppMsets.Insert(0, currM);
-                    }
-                }
+			if (this.ModelType == MDType.Specular)
+			{
+				for (int i = 0; i < this.VertexBufferColor.Length; i++)
+					AverageVertex += this.VertexBufferColor[i].Position;
+				AverageVertex = AverageVertex / (float)this.VertexBufferColor.Length;
+			}
+			this.GetJoints();
 
-            if (sunbeamList == null)
-            {
-                sunbeamList = File.ReadAllLines("Content\\Effects\\Visual\\Sun\\sunpositions.txt");
-            }
-            for (int i = 0; i < sunbeamList.Length; i++)
-            {
-                string[] spli = sunbeamList[i].Split('|');
-                if (spli[0] == this.Name)
-                {
-                    spli = spli[1].Split(';');
-                    this.sunbeam = new SunBeam
-                    {
-                        From = new Vector3(MainGame.SingleParse(spli[0]), MainGame.SingleParse(spli[1]), MainGame.SingleParse(spli[2]))
-                    };
-                    this.sunbeam.coll = new Collision("Content\\Effects\\Visual\\Sun\\" + this.Name + ".obj");
-                }
-            }
-        }
+			this.Skeleton.MaxVertex = this.MaxVertex;
+			this.Skeleton.MinVertex = this.MinVertex;
+			if (this.Skeleton.HeadBone>-1)
+			this.HeadHeight = Vector3.Transform(Vector3.Zero, this.Skeleton.Bones[this.Skeleton.HeadBone].GlobalMatrix);
+
+			for (int i = 0; i < this.Skeleton.Bones.Count; i++)
+			{
+				if (this.Skeleton.Bones[i].Parent == null)
+				{
+					this.Skeleton.RootBone = i;
+					break;
+				}
+			}
+			if (Single.IsNaN(this.Skeleton.ZeroPosition.X))
+				this.Skeleton.ZeroPosition = this.Skeleton.Bones[this.Skeleton.RootBone].GlobalMatrix.Translation;
+			
+			if (this.ModelType == MDType.Human)
+				this.ShadowT2D = new RenderTarget2D(KHDebug.Program.game.graphics.GraphicsDevice, 1000, 1000);
+		}
 
         public TexturePatch Eyes;
         public TexturePatch Mouth;
         public Skeleton Skeleton;
-        public bool HasColor = false;
+		public bool HasColor = false;
 
         public Model()
         {
             this.Name = "";
-            this.Actions = new Action[5000];
             //this.stp = new System.Diagnostics.Stopwatch();
-            this.Rotate = 0.001f;
             this.destRotate = 0;
 
-            this.Location = Vector3.Zero;
+            this.loc = Vector3.Zero;
             this.VertexBufferColor = new VertexPositionColorTexture[0];
-            this.VertexBufferShadow = new VertexPositionColor[0];
-            
-            this.VertexBuffer_c = new ComputedVertex[0];
-            this.SpecularBuffer = new Vector2[0];
+			this.ShadowBuffer = new VertexPositionColorTexture[0];
+			
+			this.VertexBuffer_c = new ComputedVertex[0];
             this.vBuffer = new VertexBuffer(KHDebug.Program.game.graphics.GraphicsDevice, typeof(VertexPositionColorTexture), 0, BufferUsage.None);
 
-            this.Supp = new List<Model>(0);
-            this.SuppMsets = new List<Moveset>(0);
             
             this.MeshesOffsets = new List<int[]>(0);
             this.MaterialIndices = new List<int>(0);
             this.materialFileNames = new List<string>(0);
             this.Textures = new List<Texture2D>(0);
             this.Patches = new List<TexturePatch>(0);
-        }
+
+		}
         public List<TexturePatch> Patches;
         public bool AllZeroOpacity = false;
         public Vector3 CliffPosition = Vector3.Zero;
+
+
         public void GetJoints()
         {
             string[] joints = new string[]
-            {
-                "HeadBone:0",
-                "LeftHandBone: 0",
+			{
+				"HeadBone:0",
+				"NeckBone:0",
+				"LeftHandBone: 0",
                 "LeftLeg: -1:0,0,0:0",
                 "LeftKnee: -1:0,0,0:0",
                 "LeftFoot: -1:0,0,0:0",
                 "RightLeg: -1:0,0,0:0",
                 "RightKnee: -1:0,0,0:0",
                 "RightFoot: -1:0,0,0:0",
-                "CliffHeight: 0,0,0",
+				"CliffPosition: 0,0,0",
                 "ZeroPosition: 0,0,0",
-                "ZeroPositionFight: 0,0,0"
-            };
-                if (File.Exists(Path.GetDirectoryName(this.FileName) + @"\Joints.txt"))
+				"ZeroPositionFight: 0,0,0",
+				"WalkSpeed: 120",
+				"RunSpeed: 240",
+				"Epaisseur: 0"
+			};
+            if (File.Exists(Path.GetDirectoryName(this.FileName) + @"\Joints.txt"))
             {
                 string[] text = File.ReadAllLines(Path.GetDirectoryName(this.FileName) + @"\Joints.txt");
                 if (text.Length<=joints.Length)
                 Array.Copy(text, joints, text.Length);
             }
             this.Skeleton.HeadBone = int.Parse(joints[0].Split(':')[1]);
-            this.Skeleton.LeftHandBone = int.Parse(joints[1].Split(':')[1]);
+            this.Skeleton.NeckBone = int.Parse(joints[1].Split(':')[1]);
+			this.Skeleton.LeftHandBone = int.Parse(joints[2].Split(':')[1]);
 
-            this.Skeleton.LeftLeg = int.Parse(joints[2].Split(':')[1]);
-            this.Skeleton.LeftKnee = int.Parse(joints[3].Split(':')[1]);
-            this.Skeleton.LeftFoot = int.Parse(joints[4].Split(':')[1]);
+            this.Skeleton.LeftLeg = int.Parse(joints[3].Split(':')[1]);
+            this.Skeleton.LeftKnee = int.Parse(joints[4].Split(':')[1]);
+            this.Skeleton.LeftFoot = int.Parse(joints[5].Split(':')[1]);
 
-            this.Skeleton.RightLeg = int.Parse(joints[5].Split(':')[1]);
-            this.Skeleton.RightKnee = int.Parse(joints[6].Split(':')[1]);
-            this.Skeleton.RightFoot = int.Parse(joints[7].Split(':')[1]);
+            this.Skeleton.RightLeg = int.Parse(joints[6].Split(':')[1]);
+            this.Skeleton.RightKnee = int.Parse(joints[7].Split(':')[1]);
+            this.Skeleton.RightFoot = int.Parse(joints[8].Split(':')[1]);
 
-            this.CliffPosition.X = MainGame.SingleParse(joints[8].Split(':')[1].Split(',')[0]);
-            this.CliffPosition.Y = MainGame.SingleParse(joints[8].Split(':')[1].Split(',')[1]);
-            this.CliffPosition.Z = MainGame.SingleParse(joints[8].Split(':')[1].Split(',')[2]);
+            this.CliffPosition.X = MainGame.SingleParse(joints[9].Split(':')[1].Split(',')[0]);
+            this.CliffPosition.Y = MainGame.SingleParse(joints[9].Split(':')[1].Split(',')[1]);
+            this.CliffPosition.Z = MainGame.SingleParse(joints[9].Split(':')[1].Split(',')[2]);
 
-            this.Skeleton.ZeroPosition.X = MainGame.SingleParse(joints[9].Split(':')[1].Split(',')[0]);
-            this.Skeleton.ZeroPosition.Y = MainGame.SingleParse(joints[9].Split(':')[1].Split(',')[1]);
-            this.Skeleton.ZeroPosition.Z = MainGame.SingleParse(joints[9].Split(':')[1].Split(',')[2]);
+            this.Skeleton.ZeroPosition.X = MainGame.SingleParse(joints[10].Split(':')[1].Split(',')[0]);
+            this.Skeleton.ZeroPosition.Y = MainGame.SingleParse(joints[10].Split(':')[1].Split(',')[1]);
+            this.Skeleton.ZeroPosition.Z = MainGame.SingleParse(joints[10].Split(':')[1].Split(',')[2]);
 
-            this.Skeleton.ZeroPositionFight.X = MainGame.SingleParse(joints[10].Split(':')[1].Split(',')[0]);
-            this.Skeleton.ZeroPositionFight.Y = MainGame.SingleParse(joints[10].Split(':')[1].Split(',')[1]);
-            this.Skeleton.ZeroPositionFight.Z = MainGame.SingleParse(joints[10].Split(':')[1].Split(',')[2]);
-        }
+			this.Skeleton.ZeroPositionFight.X = MainGame.SingleParse(joints[11].Split(':')[1].Split(',')[0]);
+			this.Skeleton.ZeroPositionFight.Y = MainGame.SingleParse(joints[11].Split(':')[1].Split(',')[1]);
+			this.Skeleton.ZeroPositionFight.Z = MainGame.SingleParse(joints[11].Split(':')[1].Split(',')[2]);
+
+			this.WalkSpeed = MainGame.SingleParse(joints[12].Split(':')[1]);
+			this.RunSpeed = MainGame.SingleParse(joints[13].Split(':')[1]);
+			this.InitialWalkSpeed = this.WalkSpeed;
+			this.InitialRunSpeed = this.RunSpeed;
+			this.Epaisseur = MainGame.SingleParse(joints[14].Split(':')[1]);
+			
+		}
 
         public unsafe struct ComputedVertex
         {
@@ -169,25 +230,37 @@ namespace KHDebug
 
 
         public List<Vector3> PathHistory = new List<Vector3>(0);
-        
 
 
-        public float PrincipalDestRotate
-        {
-            get
-            {
-                float principal = this.destRotate + MainGame.PI;
 
-                SrkBinary.MakePrincipal(ref principal);
-                return principal;
-            }
-        }
+		public float PrincipalDestRotate
+		{
+			get
+			{
+				float principal = this.destRotate + MainGame.PI;
 
-        public float SmoothJoystick = 0;
+				SrkBinary.MakePrincipal(ref principal);
+				return principal;
+			}
+		}
+
+		public float PrincipalRotate
+		{
+			get
+			{
+				float principal = this.Rotate;
+
+				SrkBinary.MakePrincipal(ref principal);
+				return principal;
+			}
+		}
+
+		public float SmoothJoystick = 0;
         public float Joystick = 0;
-        public bool Fly = false;
+		public bool Fly = false;
 
-        public float DestRotate
+		private bool rotate_dirty = true;
+		public float DestRotate
         {
             get
             {
@@ -204,16 +277,21 @@ namespace KHDebug
                 while (newVal > this.Rotate + Math.PI)
                 {
                     newVal -= MainGame.PI * 2f;
-                }
-                this.destRotate = newVal;
-            }
+				}
+				this.destRotate = newVal;
+				rotate_dirty = true;
+
+			}
         }
 
 
 
         public Vector3 oldDist;
         public float Speed = 0;
-        public Vector2 Speed2D = Vector2.Zero;
+
+        public int SkateCount = 0;
+
+		public Vector2 Speed2D = Vector2.Zero;
 
         Model master;
         public bool HasMaster = false;
@@ -234,34 +312,40 @@ namespace KHDebug
 
         //System.Diagnostics.Stopwatch stp = new System.Diagnostics.Stopwatch();
         long lastElapsed = 0;
+		public static Matrix scale500_matrix = Matrix.CreateScale(500f);
 
         public unsafe void RecreateVertexBuffer(bool force)
-        {
-            if (this.Figed)
+		{
+			if (this.Figed)
                 return;
-            float diff = 0;
+            float diff;
 
-            diff = this.DestOpacity - this.Opacity;
-            if (Math.Abs(diff) > 0.01)
-            {
-                this.Opacity += (diff * (4 / 60f));
-                if (this.Opacity > 1)
-                    this.Opacity = 1;
-                if (this.Opacity < 0)
-                    this.Opacity = 0;
-            }
-            else
-            {
-                this.Opacity = this.DestOpacity;
-            }
+			
+			if (opacity_dirty)
+			{
+				diff = this.DestOpacity - this.Opacity;
+				if (Math.Abs(diff) > 0.01)
+				{
+					this.Opacity += (diff * (4 / 60f));
+					if (this.Opacity > 1)
+						this.Opacity = 1;
+					if (this.Opacity < 0)
+						this.Opacity = 0;
+				}
+				else
+				{
+					opacity_dirty = false;
+					this.Opacity = this.DestOpacity;
+				}
+			}
 
             float OutOpacity = this.Opacity;
             if (this.Master !=null)
-            {
-                OutOpacity *= this.Master.Opacity;
+			{
+				OutOpacity *= this.Master.Opacity;
                 this.DestDiffuseColor = this.Master.DestDiffuseColor;
             }
-            if (this.ModelType == MDType.Human)
+            if (this.ModelType == MDType.Human && Action.aAccount == 0)
             this.DiffuseColor += (this.DestDiffuseColor - this.DiffuseColor) / 4f;
 
             byte OutOpacity_ = (byte)(OutOpacity * 255);
@@ -270,6 +354,11 @@ namespace KHDebug
             {
                 this.Speed = Vector3.Distance(this.Location, oldDist);
                 this.Speed2D = new Vector2(this.Location.X, this.Location.Z)- new Vector2(oldDist.X, oldDist.Z);
+                if (Vector2.Distance(this.Speed2D, Vector2.Zero)>1000)
+                {
+                    this.Speed2D = Vector2.Zero;
+                    this.Speed = 0f;
+                }
                 oldDist = this.Location;
                 lastElapsed = MainGame.stp.ElapsedMilliseconds;
             }
@@ -278,19 +367,29 @@ namespace KHDebug
             {
                 this.Location = this.Master.Location;
                 this.Rotate = this.Master.Rotate;
-            }
+				this.DestRotate = this.Master.Rotate;
+				this.LowestFloor = this.Master.LowestFloor;
+			}
             else
             {
-                diff = this.DestRotate - this.Rotate;
-                if (Math.Abs(diff) > 0.001f)
-                    this.Rotate += (diff * this.TurnStep);
+				if (rotate_dirty)
+				{
+					diff = this.DestRotate - this.Rotate;
+					if (Math.Abs(diff) > 0.001f)
+					{
+						this.Rotate += (diff * this.TurnStep * this.TurnStepScale);
+					}
+					else
+						rotate_dirty = false;
+				}
             }
 
             this.AllZeroOpacity = OutOpacity_ == 0;
+
             if (this.AllZeroOpacity)
                 return;
 
-            bool checkMaximums = Program.game.ticks % 8 == 0;
+            bool checkMaximums = Program.game.ticksAlways % 8 == 0;
 
             if (checkMaximums)
             {
@@ -303,7 +402,6 @@ namespace KHDebug
                 this.MinVertex.Z = Single.MaxValue;
             }
 
-            bool hasShadow = this.VertexBufferShadow.Length > 0;
 
 
             float lowestFloor = this.Master == null ? this.LowestFloor : this.Master.LowestFloor;
@@ -317,9 +415,8 @@ namespace KHDebug
             byte alpha = (byte)(80 * OutOpacity * (distlowest / 200f));
 
             Vector3 floorPos = new Vector3(this.Location.X, lowestFloor + 1.5f, this.Location.Z);
-
             Matrix shadowMatrix = this.Master == null ? this.ShadowMatrixSurface : this.Master.ShadowMatrixSurface;
-            Matrix rotY = Matrix.CreateRotationY(this.Rotate);
+
             bool mset = force || (this.Links.Count > 0 && this.Links[0] as Moveset != null);
             //Console.WriteLine(this.Name + (this is DAE ? "DAE" : "Model"));
             Vector3 v3 = Vector3.Zero;
@@ -328,7 +425,9 @@ namespace KHDebug
             bool isHuman = this.ModelType == MDType.Human;
             int jo4Ind = 0;
 
-            for (int i = 0; i < this.VertexBuffer_c.Length; i++)
+			hasMaster = hasMaster && this.Master.Keyblade !=null && this.ResourceIndex == this.Master.Keyblade.ResourceIndex;
+
+			for (int i = 0; i < this.VertexBuffer_c.Length; i++)
             {
                 jo4Ind = 0;
                 v3 = Vector3.Zero;
@@ -349,7 +448,7 @@ namespace KHDebug
                     v3 += ComputingBuffer * this.VertexBuffer_c[i].Vertices[j + 3];
                     jo4Ind++;
                 }
-                v3 = Vector3.Transform(v3, rotY);
+                v3 = Vector3.Transform(v3, this.Rotate_matrix);
 
                 if (checkMaximums)
                 {
@@ -361,45 +460,52 @@ namespace KHDebug
                     if (v3.Z < MinVertex.Z) MinVertex.Z = v3.Z;
                 }
 
-                if (hasShadow)
-                {
-                    /*Vector3 absV3 = new Vector3(v3.X, 0, v3.Z);
-                    if (absV3.X < 0) absV3.X *= -1f;
-                    if (absV3.Z < 0) absV3.Z *= -1f;
-                    float dist = Vector3.Distance(Vector3.Zero,absV3);
-
-                    double angle = Math.Atan2(absV3.Z / dist, absV3.X / dist);
-                    int index = (int)(((angle / (2 * MainGame.PI)) + 1f) * 50f);
-
-                    if (dist > Vector3.Distance(Vector3.Zero,this.hundredVects[index]))
-                    {
-                        this.hundredVects[index] = absV3;
-                    }*/
-                    this.VertexBufferShadow[i].Position = v3;
-                    this.VertexBufferShadow[i].Position.Y = 0;
-
-                    this.VertexBufferShadow[i].Position = Vector3.Transform(this.VertexBufferShadow[i].Position, shadowMatrix);
-                    this.VertexBufferShadow[i].Position += floorPos;
-                    
-
-                    this.VertexBufferShadow[i].Color.A = alpha;
-                }
 
                 this.VertexBufferColor[i].Position = this.Location + v3;
 
                 if (isHuman)
                     this.VertexBufferColor[i].Color.A = OutOpacity_;
-            }
-            /*for (int i=0;i<100;i++)
-            {
-                this.VertexBufferShadow2[i * 3].Position = Vector3.Zero;
-                this.VertexBufferShadow2[i * 3+1].Position = this.hundredVects[i];
-                this.VertexBufferShadow2[i * 3+1].Position = this.hundredVects[(i+1)%100];
-            }*/
-        }
+			}
 
 
-        float opacity = 1f;
+			if (this.ShadowBuffer.Length>0)
+			{
+				this.ShadowBuffer[0].Position = new Vector3(-0.5f, 0, -0.5f);
+				this.ShadowBuffer[1].Position = new Vector3(0.5f, 0, -0.5f);
+				this.ShadowBuffer[2].Position = new Vector3(0.5f, 0, 0.5f);
+				this.ShadowBuffer[3].Position = new Vector3(-0.5f, 0, -0.5f);
+				this.ShadowBuffer[4].Position = new Vector3(0.5f, 0, 0.5f);
+				this.ShadowBuffer[5].Position = new Vector3(-0.5f, 0, 0.5f);
+				
+				for (int i = 0; i < 6; i++)
+				{
+					this.ShadowBuffer[i].Color.A = alpha;
+					this.ShadowBuffer[i].Position = Vector3.Transform(this.ShadowBuffer[i].Position, scale500_matrix);
+					this.ShadowBuffer[i].Position = Vector3.Transform(this.ShadowBuffer[i].Position, shadowMatrix);
+					this.ShadowBuffer[i].Position += new Vector3(this.Location.X, this.LowestFloor+0.05f, this.Location.Z);
+				}
+			}
+
+			if (!this.MasseSet)
+			{
+				for (int i=0;i< this.VertexBufferColor.Length;i+=3)
+				{
+					this.Masse+= (float)Collision.AreaOfTriangle(
+						this.VertexBufferColor[i].Position,
+						this.VertexBufferColor[i+1].Position,
+						this.VertexBufferColor[i+2].Position);
+				}
+				this.MasseSet = true;
+			}
+
+
+		}
+
+
+
+		float opacity = 1f;
+		private bool opacity_dirty = true;
+
         public float Opacity
         {
             get
@@ -407,42 +513,58 @@ namespace KHDebug
                 return this.opacity;
             }
             set
-            {
-                if (Math.Abs(value-this.opacity) >0)
+			{
+				if (value > 1)
+					value = 1;
+				if (value < 0)
+					value = 0;
+
+                if (false&&this.HasMaster)
                 {
-                    if (this.HasMaster)
+                    Moveset master = ((this.Master as Model).Links[0] as Moveset);
+                    if (value < 0.0001)
                     {
-                        Moveset master = ((this.Master as Model).Links[0] as Moveset);
-                        if (value < 0.0001)
-                        {
-                            master.idle = master.idleRest_;
-                            master.walk = master.walkRest_;
-                            master.run = master.runRest_;
-                        }
-                        else
-                        {
-                            master.idle = master.idle_;
-                            master.walk = master.walk_;
-                            master.run = master.run_;
-                        }
+                        master.idle = master.idleRest_;
+                        master.walk = master.walkRest_;
+                        master.run = master.runRest_;
+                    }
+                    else
+                    {
+                        master.idle = master.idle_;
+                        master.walk = master.walk_;
+                        master.run = master.run_;
                     }
                 }
                 this.opacity = value;
             }
         }
-        public float DestOpacity = 1f;
+
+        public Collision Collision;
+
+        float destOpacity = 1f;
+        public float DestOpacity
+		{
+			get
+			{
+				return this.destOpacity;
+			}
+			set
+			{
+				opacity_dirty = true;
+				this.destOpacity = value;
+			}
+		}
+
         public Vector3 DiffuseColor = Microsoft.Xna.Framework.Color.White.ToVector3();
-
+        public static Vector3 DefaultDiffuseColor = Microsoft.Xna.Framework.Color.White.ToVector3();
         public Vector3 DestDiffuseColor = Microsoft.Xna.Framework.Color.White.ToVector3();
-        
-        public VertexPositionColorTexture[] VertexBufferColor;
-        public VertexPositionColor[] VertexBufferShadow;
-        //public VertexPositionColor[] VertexBufferShadow2;
-        //public Vector3[] hundredVects = new Vector3[100];
-        //public VertexPositionNormalTexture[] VertexBuffer;
-        public Vector2[] SpecularBuffer;
 
-        public Vector3 AverageVertex = Vector3.Zero;
+        public VertexPositionColorTexture[] VertexBufferColor;
+
+		public VertexPositionColorTexture[] ShadowBuffer;
+		public RenderTarget2D ShadowT2D;
+
+		public Vector3 AverageVertex = Vector3.Zero;
         public ComputedVertex[] VertexBuffer_c;
         public List<int[]> MeshesOffsets;
         public List<string> materialFileNames;
@@ -450,17 +572,36 @@ namespace KHDebug
         public List<int> MaterialIndices;
         public VertexBuffer vBuffer;
 
-        Vector3 loc;
-        public int iaBlockedCount = 0;
-        public Vector3 Location
+		public long locBlock = -1;
+
+		public Vector3 loc;
+		public Vector3 locAction;
+		public int iaBlockedCount = 0;
+
+
+		public Vector3 SpawnedLocation;
+
+
+		public Vector3 Location
         {
             get
             {
                 return this.loc;
             }
             set
-            {
-                if (Vector3.Distance(lastLoc,value)>50)
+			{
+				if (Single.IsNaN(value.X))
+				{
+					return;
+				}
+				locBlock--;
+				if (locBlock > 0)
+				{
+					this.loc = this.locAction;
+					return;
+				}
+
+				if (Vector3.Distance(lastLoc,value)>50)
                 {
                     if (PathHistory.Count < 300)
                     {
@@ -483,7 +624,8 @@ namespace KHDebug
 
         public bool JumpCancel = false;
         public bool CliffCancel = false;
-        public bool AllowCliffCancel = false;
+        public Vector3 LastLand = Vector3.Zero;
+		public bool AllowCliffCancel = false;
 
         public bool JumpCollisionCancel = false;
         public bool JumpPress = false;
@@ -497,11 +639,13 @@ namespace KHDebug
         public float Gravity = 16f;
         public float CurrentGravityY = 10f;
 
+
         public Vector2 CurrentGravity2D = Vector2.Zero;
 
         public float TurnStep = 0.2f;
+        public float TurnStepScale = 1f;
 
-        public ControlState cState = ControlState.Idle;
+		public ControlState cState = ControlState.Idle;
         public enum ControlState
         {
             Idle = 0,
@@ -510,16 +654,17 @@ namespace KHDebug
             Fall = 3,
             Land = 4,
             Jump = 5,
-            Guard = 6,
-            UnGuard = 7,
+            Guarding = 6,
+            UnGuarding = 7,
             Fly = 8,
             Cliff = 9,
             UnCliff = 10,
             Roll = 11,
             Chat = 12,
             Attack1 = 13,
-            Attack1Air = 14
-        }
+			Attack1Air = 14,
+			Guard = 15
+		}
 
         public State pState = State.GoToAtMove;
         public enum State
@@ -529,6 +674,7 @@ namespace KHDebug
             GotoAtMove_WaitFinish = 2,
             BlockAll = 3,
             GravityOnly = 4,
+			Gravity_Slide = 26,
             NoIdleWalkRun_ButRotate = 29
         }
         public Matrix ShadowMatrixSurface = Matrix.Identity;
@@ -547,16 +693,27 @@ namespace KHDebug
                 }
             }
         }
-        public float lowestFloor = 0;
-        
-        public float Rotate = 0;
-        float destRotate = 0;
-        public List<Model> Supp;
-        public List<Moveset> SuppMsets;
-        public Vector3 HeadHeight;
+        public float lowestFloor = Single.MinValue;
 
-        public Action[] Actions;
-        public int ActionsCount;
+		private float rotate = 0;
+
+        public float Rotate
+		{
+			get
+			{
+				return this.rotate;
+			}
+			set
+			{
+				this.rotate = value;
+				this.Rotate_matrix = Matrix.CreateRotationY(value);
+			}
+		}
+        public Matrix Rotate_matrix = Matrix.Identity;
+
+        float destRotate = 0;
+		public Vector3 HeadHeight;
+
         public int ZIndex = -1;
 
         public enum MDType
@@ -570,73 +727,141 @@ namespace KHDebug
 
         public MDType ModelType = MDType.Human;
 
-        public void DrawObjects(GraphicsDeviceManager gcm, AlphaTestEffect at, BasicEffect be, RasterizerState rs, RasterizerState rsNoCull)
-        {
-            for (int j = 0; j < this.Supp.Count; j++)
-            {
-                if (!this.Supp[j].IsSky)
-                {
-                    if (this.SuppMsets[j] != null && this.SuppMsets[j].ObjectMsetRender)
-                    {
-                        (this.SuppMsets[j] as Moveset).ComputeAnimation();
-                    }
-                    this.Supp[j].Draw(gcm, at, be, rs, rsNoCull);
-                }
-            }
-        }
 
 
-        public void DrawEfects(GraphicsDeviceManager gcm, BasicEffect be, RasterizerState rs)
-        {
-            if (this.sunbeam != null)
-            {
-                this.sunbeam.To = Program.game.mainCamera.Position;
-                this.sunbeam.RecreateVertexBuffer();
-                this.sunbeam.Draw(gcm, be, rs);
-            }
-        }
 
-        public Vector3 GetGlobalBone(int index)
+        public Vector3 GetGlobalBone(int index, Vector3 offset)
         {
-            return Vector3.Transform(this.Skeleton.Bones[index].GlobalMatrix.Translation, Matrix.CreateRotationY(this.Rotate));
+            return Vector3.Transform(Vector3.Transform(offset, this.Skeleton.Bones[index].GlobalMatrix) , this.Rotate_matrix);
         }
         public bool NoCull = false;
+		public static Matrix Ortho = Matrix.CreateOrthographic(500f, 500f, 0, Single.MaxValue);
+
+		public void GetShadow(GraphicsDeviceManager gcm, BasicEffect be, AlphaTestEffect at, RasterizerState rs, RasterizerState rsNoCull)
+		{
+			if (this.ShadowT2D != null && this.Master == null)
+			{
+				gcm.GraphicsDevice.SetRenderTarget(this.ShadowT2D);
+				gcm.GraphicsDevice.Clear(Color.Transparent);
+
+
+				at.View = Matrix.CreateLookAt(
+					this.Location + new Vector3(0, this.MaxVertex.Y, 1f),
+					this.Location, Vector3.Up);
+				
+				at.Projection = Ortho;
+
+				this.vBuffer.SetData<VertexPositionColorTexture>(this.VertexBufferColor);
+				gcm.GraphicsDevice.SetVertexBuffer(this.vBuffer);
+
+
+				for (int j = 0; j < this.MeshesOffsets.Count; j++)
+				{
+					at.Texture = this.Textures[this.MaterialIndices[j]];
+					at.CurrentTechnique.Passes[0].Apply();
+					gcm.GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleList, this.MeshesOffsets[j][0], this.MeshesOffsets[j][1] / 3);
+				}
+
+				at.View = be.View;
+				at.Projection = be.Projection;
+			}
+			else
+			if (this.Master != null && this.Master.ShadowT2D != null)
+			{
+				gcm.GraphicsDevice.SetRenderTarget(this.Master.ShadowT2D);
+				gcm.GraphicsDevice.Clear(Color.Transparent);
+
+
+				at.View = Matrix.CreateLookAt(
+					this.Master.Location + new Vector3(0, this.Master.MaxVertex.Y, 1f),
+					this.Master.Location, Vector3.Up);
+
+
+				at.Projection = Ortho;
+
+				this.Master.vBuffer.SetData<VertexPositionColorTexture>(this.Master.VertexBufferColor);
+				gcm.GraphicsDevice.SetVertexBuffer(this.Master.vBuffer);
+
+				//at.Texture = ResourceLoader.EmptyT2D;
+				//at.CurrentTechnique.Passes[0].Apply();
+
+				for (int j = 0; j < this.Master.MeshesOffsets.Count; j++)
+				{
+					at.Texture = this.Master.Textures[this.Master.MaterialIndices[j]];
+					at.CurrentTechnique.Passes[0].Apply();
+					gcm.GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleList, this.Master.MeshesOffsets[j][0], this.Master.MeshesOffsets[j][1] / 3);
+				}
+
+
+				this.vBuffer.SetData<VertexPositionColorTexture>(this.VertexBufferColor);
+				gcm.GraphicsDevice.SetVertexBuffer(this.vBuffer);
+				for (int j = 0; j < this.MeshesOffsets.Count; j++)
+				{
+					at.Texture = this.Textures[this.MaterialIndices[j]];
+					at.CurrentTechnique.Passes[0].Apply();
+					gcm.GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleList, this.MeshesOffsets[j][0], this.MeshesOffsets[j][1] / 3);
+				}
+				
+
+				at.View = be.View;
+				at.Projection = be.Projection;
+			}
+		}
+
+		public void DrawShadow(GraphicsDeviceManager gcm, AlphaTestEffect at, BasicEffect be, RasterizerState rs, RasterizerState rsNoCull)
+		{
+			if (this.Master != null)
+				return;
+
+			var rs_old = gcm.GraphicsDevice.RasterizerState;
+			var depth_old = gcm.GraphicsDevice.DepthStencilState;
+
+			gcm.GraphicsDevice.RasterizerState = rs;
+			gcm.GraphicsDevice.DepthStencilState = DepthStencilState.DepthRead;
+			if (this.ShadowT2D != null)
+			{
+				be.Texture = this.ShadowT2D;
+				be.CurrentTechnique.Passes[0].Apply();
+				gcm.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, this.ShadowBuffer, 0, this.ShadowBuffer.Length / 3);
+			}
+
+			gcm.GraphicsDevice.RasterizerState = rs_old;
+			gcm.GraphicsDevice.DepthStencilState = depth_old;
+		}
 
         public void Draw(GraphicsDeviceManager gcm, AlphaTestEffect at, BasicEffect be, RasterizerState rs, RasterizerState rsNoCull)
         {
+			if (this is MAP)
+			{
+				(this as MAP).Draw(gcm, at, be, rs, rsNoCull);
+			}
             if (this.AllZeroOpacity)
             {
                 return;
             }
             if (this.Eyes.Set == 0x584976)
             {
-                this.Eyes.Animate();
-            }
-            if (Action.aAccount == 0)
-            {
-                Action.ac = this.Actions;
-                Action.aAccount = this.ActionsCount;
+                this.Eyes.AnimateEye();
             }
 
-            if (this.VertexBufferShadow.Length>0)
+            if (this.Mouth.Set == 0x584976 && this.NPC && this.Links.Count>0)
             {
-                be.Texture = ResourceLoader.EmptyT2D;
-                be.CurrentTechnique.Passes[0].Apply();
-                gcm.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, this.VertexBufferShadow,0, this.VertexBufferShadow.Length/3);
-            }
+				var mset = (this.Links[0] as Moveset);
+				//if (mset.PlayingIndex == mset.chat1_)
+				int ind = -1;
+				if (BulleSpeecher.CurrentBulle != null)
+				{
+					ind = BulleSpeecher.bulles.IndexOf(BulleSpeecher.CurrentBulle);
+					if (ind>-1 && BulleSpeecher.bulleEmmiters[ind]!=null && BulleSpeecher.bulleEmmiters[ind].ResourceIndex == this.ResourceIndex)
+					this.Mouth.AnimateMouth();
+				}
+				if (ind<0 && this.Mouth.lastIndex > -1)
+					this.Mouth.GetPatch(-1);
+			}
 
-            if (this.Supp.Count>0)
-            {
-                gcm.GraphicsDevice.DepthStencilState = DepthStencilState.None;
-                for (int i = 0; i < this.Supp.Count; i++)
-                {
-                    if (this.Supp[i].IsSky)
-                        this.Supp[i].Draw(gcm, at, be, rs, rsNoCull);
-                }
-                gcm.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
-            }
-            
-            if (rs != null)
+
+
+			if (rs != null)
             {
                 if (this.NoCull)
                     gcm.GraphicsDevice.RasterizerState = rsNoCull;
@@ -644,10 +869,10 @@ namespace KHDebug
                     gcm.GraphicsDevice.RasterizerState = rs;
             }
 
-            
-            if (this.SpecularBuffer.Length>0)
-            {
-                Vector3 camPos = Program.game.mainCamera.LookAt + Vector3.Transform(Vector3.Backward, Matrix.CreateFromYawPitchRoll(Program.game.mainCamera.Yaw, Program.game.mainCamera.Pitch, 0)) * Program.game.mainCamera.Zoom;
+
+			if (this.ModelType == MDType.Specular)
+			{
+                Vector3 camPos = Program.game.mainCamera.LookAt + Vector3.Transform(Vector3.Backward, Program.game.mainCamera.YawPitch_matrix) * Program.game.mainCamera.Zoom;
 
                 double hypo = Vector3.Distance(camPos + new Vector3(0, this.AverageVertex.Y- camPos.Y, 0), this.AverageVertex);
                 double angle = Math.Atan2((camPos.Z - this.AverageVertex.Z) / hypo, ((camPos.X - this.AverageVertex.X) / hypo));
@@ -660,52 +885,96 @@ namespace KHDebug
                     xOff = 0.5f;
                 if (yOff > 0.5)
                     yOff = 0.5f;
-                Matrix scaleMat = Matrix.CreateScale(scale);
-                for (int i = 0; i < this.SpecularBuffer.Length; i++)
-                {
-                    this.VertexBufferColor[i].TextureCoordinate.X = this.SpecularBuffer[i].X - 0.5f;
-                    this.VertexBufferColor[i].TextureCoordinate.Y = this.SpecularBuffer[i].Y - 0.5f;
-                    this.VertexBufferColor[i].TextureCoordinate = Vector2.Transform(this.VertexBufferColor[i].TextureCoordinate, scaleMat);
+
+				Matrix scaleMat = Matrix.CreateScale(0.73f*scale);
+				float width = (this.MaxVertex.X - this.MinVertex.X);
+				float height = (this.MaxVertex.Y - this.MinVertex.Y);
+				float ratio = height / width;
+
+				for (int i = 0; i < this.VertexBufferColor.Length; i++)
+				{
+					this.VertexBufferColor[i].TextureCoordinate.X = this.VertexBufferColor[i].Position.X;
+					this.VertexBufferColor[i].TextureCoordinate.Y = this.VertexBufferColor[i].Position.Y;
+
+					this.VertexBufferColor[i].TextureCoordinate.X -= this.MinVertex.X;
+					this.VertexBufferColor[i].TextureCoordinate.Y -= this.MinVertex.Y;
+
+					this.VertexBufferColor[i].TextureCoordinate.X /= width;
+					this.VertexBufferColor[i].TextureCoordinate.Y /= height;
+
+
+					this.VertexBufferColor[i].TextureCoordinate.Y = 1 - this.VertexBufferColor[i].TextureCoordinate.Y;
+
+					this.VertexBufferColor[i].TextureCoordinate.X -= 0.5f;
+					this.VertexBufferColor[i].TextureCoordinate.Y -= 0.5f;
+
+					this.VertexBufferColor[i].TextureCoordinate.Y *= ratio;
+
+					this.VertexBufferColor[i].TextureCoordinate = Vector2.Transform(this.VertexBufferColor[i].TextureCoordinate, scaleMat);
                     this.VertexBufferColor[i].TextureCoordinate.X += 0.5f;
                     this.VertexBufferColor[i].TextureCoordinate.Y += 0.5f;
 
                     this.VertexBufferColor[i].TextureCoordinate.X += -xOff;
                     this.VertexBufferColor[i].TextureCoordinate.Y += yOff;
                     
-                    this.VertexBufferColor[i].Color.A = 128;
                 }
             }
             
             this.vBuffer.SetData<VertexPositionColorTexture>(this.VertexBufferColor);
             gcm.GraphicsDevice.SetVertexBuffer(this.vBuffer);
+			gcm.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
 
-            for (int i = 0; i<this.MeshesOffsets.Count; i++)
-            {
-                if (this.ModelType == MDType.Sky || this.ModelType == MDType.Specular || (this.Opacity>0.001f&&this.Opacity<1))
-                {
-                    if (be != null)
+			if (this.ModelType == MDType.Sky || this.ModelType == MDType.Specular || (this.Opacity>0.001f&&this.Opacity<1))
+			{
+				if (be != null)
                     {
                         be.VertexColorEnabled = true;// this.HasColor;
-                        be.DiffuseColor = this.DiffuseColor;
-                        be.Texture = this.Textures[this.MaterialIndices[i]];
-                        be.CurrentTechnique.Passes[0].Apply();
-                        //be.Texture = KHDebug.ResourceLoader.GetT2D(this.materialFileNames[this.MaterialIndices[ind]]);
+                        if (this.HasColor)
+                            be.DiffuseColor = DefaultDiffuseColor;
+                        else
+							be.DiffuseColor = this.DiffuseColor;
+
+					//be.Texture = ResourceLoader.EmptyT2D;
+					//be.CurrentTechnique.Passes[0].Apply();
+
+					for (int i = 0; i < this.MeshesOffsets.Count; i++)
+					{
+						if (this.MaterialIndices[i] < this.Textures.Count)
+							be.Texture = this.Textures[this.MaterialIndices[i]];
+						else
+							be.Texture = ResourceLoader.EmptyT2D;
+						be.CurrentTechnique.Passes[0].Apply();
+                        gcm.GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleList, this.MeshesOffsets[i][0], this.MeshesOffsets[i][1] / 3);
                     }
-                }
+					//be.Texture = KHDebug.ResourceLoader.GetT2D(this.materialFileNames[this.MaterialIndices[ind]]);
+				}
+			}
                 else
                 {
                     if (at != null)
                     {
                         at.VertexColorEnabled = this.HasColor;
-                        at.DiffuseColor = this.DiffuseColor;
-                        at.Texture = this.Textures[this.MaterialIndices[i]];
-                        at.CurrentTechnique.Passes[0].Apply();
+                        if (this.HasColor)
+                            at.DiffuseColor = DefaultDiffuseColor;
+                        else
+                            at.DiffuseColor = this.DiffuseColor;
+
+					//at.Texture = ResourceLoader.EmptyT2D;
+					//at.CurrentTechnique.Passes[0].Apply();
+					for (int i = 0; i < this.MeshesOffsets.Count; i++)
+					{
+						if (this.MaterialIndices[i] < this.Textures.Count)
+							at.Texture = this.Textures[this.MaterialIndices[i]];
+						else
+							at.Texture = ResourceLoader.EmptyT2D;
+						at.CurrentTechnique.Passes[0].Apply();
+                        gcm.GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleList, this.MeshesOffsets[i][0], this.MeshesOffsets[i][1] / 3);
+                    }
                         //at.Texture = KHDebug.ResourceLoader.GetT2D(this.materialFileNames[this.MaterialIndices[ind]]);
                     }
                 }
-                gcm.GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleList, this.MeshesOffsets[i][0], this.MeshesOffsets[i][1] / 3);
                 //gcm.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, VertexBufferColor,this.MeshesOffsets[i][0], this.MeshesOffsets[i][1] / 3);
-            }
+            
         }
 
     }

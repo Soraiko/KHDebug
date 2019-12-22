@@ -48,25 +48,6 @@ namespace KHDebug
             this.Type = ResourceType.DaeModel;
             this.Name = Path.GetFileNameWithoutExtension(filename);
             this.FileName = filename;
-            if (File.Exists(Path.GetDirectoryName(this.FileName) + @"\" + "collision.obj"))
-            {
-                this.Links.Add(new Collision(Path.GetDirectoryName(this.FileName) + @"\" + "collision.obj"));
-            }
-            if (File.Exists(Path.GetDirectoryName(this.FileName) + @"\" + "eyes.txt"))
-            {
-                this.Eyes = new TexturePatch(Path.GetDirectoryName(this.FileName) + @"\" + "eyes.txt", this);
-            }
-            if (File.Exists(Path.GetDirectoryName(this.FileName) + @"\" + "mouth.txt"))
-            {
-                this.Mouth = new TexturePatch(Path.GetDirectoryName(this.FileName) + @"\" + "mouth.txt", this);
-            }
-            for (int i = 0; i < 10; i++)
-            {
-                if (File.Exists(Path.GetDirectoryName(this.FileName) + @"\" + "patch" + i + ".txt"))
-                {
-                    this.Patches.Add(new TexturePatch(Path.GetDirectoryName(this.FileName) + @"\" + "patch" + i + ".txt", this));
-                }
-            }
 
             filename = filename.Replace("/", "\\");
             if (!filename.Contains(":\\") && File.Exists(System.IO.Directory.GetCurrentDirectory() + "\\" + filename))
@@ -222,20 +203,26 @@ namespace KHDebug
             this.VertexBuffer_c = new ComputedVertex[totalVertexCount];
 
 
+			this.ShadowBuffer = new VertexPositionColorTexture[this.ModelType == MDType.Human ? 6 : 0];
+
+			if (this.ShadowBuffer.Length>0)
+			{
+				this.ShadowBuffer[0].TextureCoordinate = new Vector2(0, 0);
+				this.ShadowBuffer[1].TextureCoordinate = new Vector2(1, 0);
+				this.ShadowBuffer[2].TextureCoordinate = new Vector2(1, 1);
+				this.ShadowBuffer[3].TextureCoordinate = new Vector2(0, 0);
+				this.ShadowBuffer[4].TextureCoordinate = new Vector2(1, 1);
+				this.ShadowBuffer[5].TextureCoordinate = new Vector2(0, 1);
+			}
 
 
-            this.VertexBufferShadow = new VertexPositionColor[this.ModelType == MDType.Human ? totalVertexCount : 0];
-            //this.VertexBufferShadow2 = new VertexPositionColor[this.ModelType == MDType.Human ? 3000 : 0];
 
-            for (int i = 0; i < this.VertexBufferShadow.Length; i++)
-            {
-                VertexBufferShadow[i].Color = new Microsoft.Xna.Framework.Color(0, 0, 0, 0);
-            }
 
-            //for (int i = 0; i < this.VertexBufferShadow2.Length; i++)
-            //    VertexBufferShadow2[i].Color = new Color(0, 0, 0, 0);
 
-            int vIndex = 0;
+			//for (int i = 0; i < this.VertexBufferShadow2.Length; i++)
+			//    VertexBufferShadow2[i].Color = new Color(0, 0, 0, 0);
+
+			int vIndex = 0;
 
 
 
@@ -243,6 +230,7 @@ namespace KHDebug
             for (int i = 0; i < this.GeometryDataVertex_i.Count; i++)
             {
                 int controllerIndex = this.PerControllerGeometry.IndexOf(this.GeometryIDs[i]);
+                //Console.WriteLine(this.GeometryIDs[i]);
                 for (int j = 0; j < this.GeometryDataVertex_i[i].Count; j++)
                 {
 
@@ -324,37 +312,6 @@ namespace KHDebug
 
             this.vBuffer = new VertexBuffer(Program.game.graphics.GraphicsDevice, typeof(VertexPositionColorTexture), this.VertexBufferColor.Length, BufferUsage.None);
             this.vBuffer.SetData<VertexPositionColorTexture>(this.VertexBufferColor);
-
-            if (this.Name.Contains("-sp"))
-            {
-                this.SpecularBuffer = new Vector2[this.VertexBufferColor.Length];
-                for (int i = 0; i < this.VertexBufferColor.Length; i++)
-                {
-                    this.SpecularBuffer[i].X = this.VertexBufferColor[i].TextureCoordinate.X;
-                    this.SpecularBuffer[i].Y = this.VertexBufferColor[i].TextureCoordinate.Y;
-                    AverageVertex += this.VertexBufferColor[i].Position;
-                }
-                AverageVertex = AverageVertex / (float)this.VertexBufferColor.Length;
-            }
-
-
-
-            this.GetJoints();
-
-            this.Skeleton.MaxVertex = this.MaxVertex;
-            this.Skeleton.MinVertex = this.MinVertex;
-            this.HeadHeight = Vector3.Transform(Vector3.Zero, this.Skeleton.Bones[this.Skeleton.HeadBone].GlobalMatrix) /*+ new Vector3(0, 40, 0)*/;
-
-            for (int i = 0; i < this.Skeleton.Bones.Count; i++)
-            {
-                if (this.Skeleton.Bones[i].Parent == null)
-                {
-                    this.Skeleton.RootBone = i;
-                    break;
-                }
-            }
-            if (Single.IsNaN(this.Skeleton.ZeroPosition.X))
-                this.Skeleton.ZeroPosition = this.Skeleton.Bones[this.Skeleton.RootBone].GlobalMatrix.Translation;
         }
 
         public enum DisplayMode
@@ -391,8 +348,37 @@ namespace KHDebug
         }
 
         public List<Joint> Joints;
+
         public new void Parse()
         {
+
+            /*var vals = Document.SelectNodes("//visual_scene/node");
+            for (int i=0;i< vals.Count;i++)
+            {
+                var child = vals[i].SelectNodes("descendant::node");
+                if (child.Count > 0)
+                {
+                    for (int j = 0; j < child.Count; j++)
+                    {
+                        var nd = child[j];
+                        vals[i].ParentNode.AppendChild(nd);
+                    }
+                    vals[i].ParentNode.RemoveChild(vals[i]);
+                }
+            }
+            FileStream mStream = new FileStream(@"D:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\Content\Models\TT08\test.dae", FileMode.OpenOrCreate);
+            XmlTextWriter writer = new XmlTextWriter(mStream, Encoding.ASCII);
+            writer.Formatting = Formatting.Indented;
+            writer.Indentation = 1;
+            writer.IndentChar = '	';
+            this.Document.WriteContentTo(writer);
+            writer.Flush();
+            mStream.Flush();
+
+            writer.Close();
+            mStream.Close();
+            Console.WriteLine("");*/
+
             /*List<string> filenames = new List<string>(0);
             List<string> imageIDs = new List<string>(0);
 
@@ -400,6 +386,7 @@ namespace KHDebug
             List<string> toImageID = new List<string>(0);
 
             var cols = Document.SelectNodes("//library_images//image[@id]");
+            string out_ = "";
 
             for (int i = 0; i < cols.Count; i++)
             {
@@ -407,6 +394,29 @@ namespace KHDebug
                 {
                     string filename = Path.GetFileName(cols[i].ChildNodes[0].InnerText);
                     string imageID = cols[i].Attributes["id"].InnerText;
+                    System.Drawing.Bitmap bmp = (System.Drawing.Bitmap)System.Drawing.Image.FromFile(@"D:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\Content\Models\TT08\" + filename);
+
+                    for (int x=0;x< bmp.Width;x++)
+                    for (int y=0;y< bmp.Height;y++)
+                    {
+                            var pix = bmp.GetPixel(x, y);
+                            if (pix.A < 100)
+                            {
+                                string material = Document.SelectNodes("//texture[@texture='" + imageID + "']")[0].ParentNode.ParentNode.ParentNode.ParentNode.ParentNode.Attributes["name"].Value;
+
+                                //out_ += pix.A.ToString("d3")+"|"+filename + "|"+Document.SelectNodes("//texture[@texture='" + imageID + "']")[0].ParentNode.ParentNode.ParentNode.ParentNode.ParentNode.Attributes["name"].Value + "\r\n";
+                                var matsNodes = Document.SelectNodes("//triangles[@material='" + material + "']");
+                                for (int k=0;k< matsNodes.Count;k++)
+                                {
+                                    out_ += "select -tgl " + matsNodes[k].ParentNode.ParentNode.Attributes["id"].Value.Substring(0, matsNodes[k].ParentNode.ParentNode.Attributes["id"].Value.Length-4) +";\r\n";
+                                }
+                                x = bmp.Width-1;
+                                y = bmp.Height-1;
+                                break;
+                            }
+                    }
+
+
 
                     int index = filenames.IndexOf(filename);
                     if (index < 0)
@@ -428,7 +438,12 @@ namespace KHDebug
                 }
 
             }
-            List<string> toeIDs = new List<string>(0);
+            File.WriteAllText("data.txt", out_);
+            System.Diagnostics.Process.Start("data.txt");
+            Console.WriteLine("");*/
+
+
+            /*List<string> toeIDs = new List<string>(0);
 
 
 
@@ -539,7 +554,7 @@ namespace KHDebug
                 }
             }*/
 
-            /*var cols = Document.SelectNodes("//source[contains(@id,'oly') and contains(@id,'COLOR')]/float_array");
+            /*var cols = Document.SelectNodes("//source[contains(@id,'Cube') and contains(@id,'COLOR')]/float_array");
             for (int j = 0; j < cols.Count; j++)
             {
                 string[] split_ = cols[j].InnerText.Split('\n');
@@ -561,16 +576,20 @@ namespace KHDebug
                         count2++;
                     }
                 }
-                
+
                 for (int i = 0; i < split_.Length; i++)
                 {
                     string[] spli = split_[i].Split(' ');
                     if (spli.Length > 3)
-                    {
-                        Single val1 = MainGame.SingleParse(spli[0]) * 0.92841754927434920048713788903984f;
-                        Single val2 = MainGame.SingleParse(spli[1]) * 0.77952510261049787454527205006687f;
-                        Single val3 = MainGame.SingleParse(spli[2]) * 0.6891708342657306265189402415733f;
-                        Single val4 = MainGame.SingleParse(spli[3]);
+                   {
+                       Single val1 = MainGame.SingleParse(spli[0]) * 0.92841754927434920048713788903984f;
+                       Single val2 = MainGame.SingleParse(spli[1]) * 0.77952510261049787454527205006687f;
+                       Single val3 = MainGame.SingleParse(spli[2]) * 0.6891708342657306265189402415733f;
+
+                       //Single val1 = MainGame.SingleParse(spli[0]) * 0.7f + (193f/455f) * 0.3f;
+                       //Single val2 = MainGame.SingleParse(spli[1]) * 0.7f + (120f / 455f) * 0.3f;
+                       //Single val3 = MainGame.SingleParse(spli[2]) * 0.7f + (76f / 455f) * 0.3f;
+                       Single val4 = MainGame.SingleParse(spli[3]);
                         val4 = (count1 == count2)  ? 0.333333f : 1f;
                         output += val1.ToString("0.000000") + " " + val2.ToString("0.000000") + " " + val3.ToString("0.000000") + " " + val4.ToString("0.000000") + "\r\n";
                     }
@@ -578,7 +597,7 @@ namespace KHDebug
 
                 cols[j].InnerText = output;
             }
-            FileStream mStream = new FileStream(@"Content\Models\TT08\tokamkeRed2.dae", FileMode.OpenOrCreate);
+            FileStream mStream = new FileStream(@"D:\jeux\kingdomhearts\app_kh2tools\export\map\jp\TT04-export\mur-.dae", FileMode.OpenOrCreate);
             XmlTextWriter writer = new XmlTextWriter(mStream, Encoding.ASCII);
             writer.Formatting = Formatting.Indented;
             writer.Indentation = 1;
@@ -708,10 +727,34 @@ namespace KHDebug
                     this.ImagesFilenames.Add(path);
                 }
             }
-            #endregion
+			/*string[] pngs = System.IO.Directory.GetFiles(@"D:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\Content\Models\TT08", "*.png");
+			ResourceLoader.EmptyBMP.SetPixel(0, 0, System.Drawing.Color.Red);
+			for (int i = 0; i < pngs.Length; i++)
+			{
+				ResourceLoader.EmptyBMP.Save(pngs[i]);
+			}*/
+				/*string[] pngs = System.IO.Directory.GetFiles(@"D:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\Content\Models\TT08","*.png");
+				for (int i=0;i< pngs.Length;i++)
+				{
+					bool has_ = false;
+					for (int j = 0; j < this.ImagesFilenames.Count; j++)
+					{
+						if (this.ImagesFilenames[j] == Path.GetFileName(pngs[i]))
+						{
+							has_ = true;
+							break;
+						}
 
-            #region Parsing Materials
-            for (int i = 0; i < this.materials.Count; i++)
+					}
+					if (!has_)
+					{
+						File.Move(pngs[i], pngs[i].Replace(".png", ".deleteme"));
+					}
+				}*/
+				#endregion
+
+				#region Parsing Materials
+				for (int i = 0; i < this.materials.Count; i++)
             {
                 var instanceEffectNode = this.materials[i].SelectNodes("instance_effect");
                 if (instanceEffectNode.Count > 0)
@@ -1589,7 +1632,7 @@ namespace KHDebug
 
         public byte[] mdlxBytes;
         public MemoryStream mdlxStream;
-
+        
         public unsafe void ExportBin()
         {
             FileStream fs = new FileStream(Path.GetDirectoryName(this.FileName)+ @"\" + this.Name + ".mdl", FileMode.OpenOrCreate);

@@ -19,8 +19,9 @@ namespace KHDebug
             PlayAnim = 1,
             Gameplay = 2,
             ContactCollison = 3,
-            Goto = 4
-        }
+            Goto = 4,
+			SetBGMVolume = 5
+		}
 
         private List<SceneCommand> Commands;
         private List<object> Instructions;
@@ -128,18 +129,40 @@ namespace KHDebug
                                 }
                                 Program.game.mainCamera.Zoom = Program.game.mainCamera.MaxZoom;
                             }
-                        }
-                        break;
-                    case SceneCommand.ContactCollison:
 
-                        if (this.Frame == currF)
-                        {
-                            var v3 = (bool)this.Instructions[i];
-                            ScenePlayer.AllowContactCollision = v3;
-                        }
+							if (v3.Length == 2)
+							{
+								Program.game.lookAt = v3[0];
+								Program.game.camPos = v3[1];
+								Program.game.mainCamera.Target = null;
+							}
+
+						}
                         break;
-                        
-                    case SceneCommand.Gameplay:
+					case SceneCommand.ContactCollison:
+
+						if (this.Frame == currF)
+						{
+							var v3 = (bool)this.Instructions[i];
+							ScenePlayer.AllowContactCollision = v3;
+						}
+						break;
+					case SceneCommand.SetBGMVolume:
+
+						if (this.Frame >= currF)
+						{
+							var v0 = ((int[])this.Instructions[i])[0]/100f;
+							var v1 = (float)(((int[])this.Instructions[i])[1]);
+							int ind = Audio.names.IndexOf(Audio.BGM);
+							if (ind > -1)
+							{
+								Audio.effectInstances[ind].Volume += (v0 - Audio.effectInstances[ind].Volume) / v1;
+							}
+							
+						}
+						break;
+
+					case SceneCommand.Gameplay:
 
                         if (this.Frame == currF)
                         {
@@ -155,7 +178,8 @@ namespace KHDebug
                                 {
                                     gt.Idle();
                                 }
-                            }
+								Program.game.mainCamera.Target = Program.game.Player;
+							}
                         }
 
                         break;
@@ -200,14 +224,21 @@ namespace KHDebug
                         this.Instructions.Add(new GotoDest(mdl_,dest));
                         this.Commands.Add(SceneCommand.Goto);
                         break;
-                    case "ContactCollison":
-                        if (startFrame > this.MaxFrame)
-                            this.MaxFrame = startFrame;
+					case "SetBGMVolume":
+						if (startFrame > this.MaxFrame)
+							this.MaxFrame = startFrame;
 
-                        this.Instructions.Add(Boolean.Parse(spli2[0]));
-                        this.Commands.Add(SceneCommand.ContactCollison);
-                        break;
-                    case "SetCamera":
+						this.Instructions.Add(new int[] { int.Parse(spli1[2]), int.Parse(spli1[3]) });
+						this.Commands.Add(SceneCommand.SetBGMVolume);
+						break;
+					case "ContactCollison":
+						if (startFrame > this.MaxFrame)
+							this.MaxFrame = startFrame;
+
+						this.Instructions.Add(Boolean.Parse(spli2[0]));
+						this.Commands.Add(SceneCommand.ContactCollison);
+						break;
+					case "SetCamera":
                         if (startFrame>this.MaxFrame)
                         this.MaxFrame = startFrame;
                         Vector3[] insts = new Vector3[spli2.Length / 3];
@@ -254,26 +285,45 @@ namespace KHDebug
                                     mdl = MainGame.ResourceFiles[r] as Model;
                                     break;
                                 }
-                            }
-                            if (mdl == null)
-                            for (int r = 0; r < Program.game.Map.Supp.Count; r++)
-                            {
-                                if (Program.game.Map.Supp[r].Name ==  spli2[n + 0])
-                                {
-                                    mdl = Program.game.Map.Supp[r] as Model;
-                                    break;
-                                }
-                            }
+							}
+							if (mdl == null)
+								for (int r = 0; r < Program.game.Map.Supp.Count; r++)
+								{
+									if (Program.game.Map.Supp[r].Name == spli2[n + 0])
+									{
+										mdl = Program.game.Map.Supp[r] as Model;
+										break;
+									}
+								}
+							if (mdl == null)
+							{
+								mdl = new DAE(@"Content\Models\" + spli2[n + 0] + @"\"+ spli2[n + 0]+".dae");
+								mdl.Parse();
+								MainGame.ResourceFiles.Add(mdl);
+								mdl.Render = false;
+							}
 
-                            mdl.Cutscene = true;
+							mdl.Cutscene = true;
                             int index = -1;
-                            if (int.TryParse(spli2[n + 1], out index))
-                            {
-                                mset = (mdl.Links[0] as BinaryMoveset);
+							if (mdl.Links.Count > 0)
+							(mdl.Links[0] as BinaryMoveset).PlayingIndex = -1;
+
+							if (int.TryParse(spli2[n + 1], out index))
+							{
+								if (mdl.Links.Count == 0)
+								{
+									mset = new BinaryMoveset(mdl.FileName.Replace(mdl.Name+".dae",@"\MSET"));
+									mset.Links.Add(mdl);
+									mset.Parse();
+									MainGame.ResourceFiles.Add(mset);
+									mdl.Links.Add(mset);
+								}
+								else
+								mset = (mdl.Links[0] as BinaryMoveset);
                             }
                             else
                             {
-                                string name = Path.GetFileNameWithoutExtension(@"Content\Scenes\" + spli2[n + 1]);
+                                string name = Path.GetFileNameWithoutExtension(@"Content\Scenes\ANB\" + spli2[n + 1]);
 
                                 for (int r=0;r< MainGame.ResourceFiles.Count;r++)
                                 {
@@ -284,19 +334,24 @@ namespace KHDebug
                                 }
                                 if (mset == null)
                                 {
-                                    mset = new BinaryMoveset(@"Content\Scenes\" + spli2[n + 1]);
+                                    mset = new BinaryMoveset(@"Content\Scenes\ANB\" + spli2[n + 1]);
                                     MainGame.ResourceFiles.Add(mset);
                                 }
                                 index = 0;
-                            }
-                            if (mset.Links.Count == 0)
+							}
+							mset.Render = true;
+
+
+							if (mset.Links.Count == 0)
                                 mset.Links.Add(mdl);
                             
                             mset.Skeleton = mdl.Skeleton;
+							if (mdl.Links.Count>0)
                             mset.Voices = (mdl.Links[0] as Moveset).Voices;
-                            //mset.Parse();
 
-                            Vector3 startPos = Vector3.Zero;
+							//mset.Parse();
+
+							Vector3 startPos = Vector3.Zero;
                             startPos.X = MainGame.SingleParse(spli2[n + 2]);
                             startPos.Y = MainGame.SingleParse(spli2[n + 3]);
                             startPos.Z = MainGame.SingleParse(spli2[n + 4]);
@@ -417,19 +472,37 @@ namespace KHDebug
                 for (int r = 0; r < MainGame.ResourceFiles.Count; r++)
                 {
                     var mset = (MainGame.ResourceFiles[r] as Moveset);
-                    if (mset != null && mset.ResourceIndex ==  this.Models[i].ResourceIndex)
+                    if (mset != null && mset.Links.Count> 0 && (mset.Links[0]).ResourceIndex ==  this.Models[i].ResourceIndex)
                     {
                         mset.PlayingIndex = mset.idle;
                     }
-                }
-                this.Models[i].Cutscene = false;
-            }
+				}
+				this.Models[i].Cutscene = false;
+
+				if ((Program.game.Player == null || this.Models[i].ResourceIndex != Program.game.Player.ResourceIndex) &&
+					(Program.game.Partner1 == null || this.Models[i].ResourceIndex != Program.game.Partner1.ResourceIndex) &&
+					(Program.game.Partner2 == null || this.Models[i].ResourceIndex != Program.game.Partner2.ResourceIndex))
+				{
+					this.Models[i].Render = false;
+					if (this.Models[i].Links.Count>0)
+					{
+						var msetM = (this.Models[i].Links[0] as Moveset);
+						if (msetM!=null)
+						{
+							msetM.PlayingFrame = 0;
+							msetM.Render = false;
+						}
+					}
+				}
+
+			}
         }
 
         public void Init()
         {
             this.CurrFrame = 0;
-            for (int i = 0; i < this.Models.Count; i++)
+
+			for (int i = 0; i < this.Models.Count; i++)
             {
                 this.Models[i].Cutscene = true;
                 this.Models[i].Location = this.StartPositions[i];
@@ -482,8 +555,9 @@ namespace KHDebug
                 this.Movesets[i].ComputeAnimation();
             }
             for (int i = 0; i < this.Models.Count; i++)
-            {
-                this.Models[i].LowestFloor = this.Models[i].Location.Y;
+			{
+				this.Models[i].Render = MainGame.TState != MainGame.TransitionState.PreparingToTransit;
+				this.Models[i].LowestFloor = this.Models[i].Location.Y;
                 this.Models[i].RecreateVertexBuffer(true);
             }
         }

@@ -1,0 +1,125 @@
+string[] input = File.ReadAllLines(@"D:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\Content\Models\TT08\parcoursTram.txt");
+            List<Vector3> li = new List<Vector3>(0);
+            List<Vector3> liHomogene = new List<Vector3>(0);
+            for (int i = 0; i < input.Length; i++)
+            {
+                string[] spli = input[i].Split('|');
+                li.Add(new Vector3(Single.Parse(spli[0]), Single.Parse(spli[1]), Single.Parse(spli[2])));
+            }
+            float distTotal = 0;
+            string output = "";
+
+
+            for (int i = 0; i < li.Count; i++)
+            {
+                int be = i - 1;
+                int ne = i;
+                if (be < 0)
+                {
+                    be = li.Count - 1;
+                }
+                if (ne > li.Count - 1)
+                {
+                    ne = 0;
+                }
+                Vector3 before = li[be];
+                Vector3 next = li[ne];
+                distTotal += Vector3.Distance(before, next);
+            }
+            float step = distTotal / (float)li.Count;
+            Console.WriteLine("step: "+ step);
+
+            float parcours = 0;
+
+
+
+            Vector3 pC = Vector3.Zero;
+
+            liHomogene.Add(li[0]*1f);
+
+            for (int i = 0; i < li.Count; i++)
+            {
+                Vector3 pA = li[i] * 1f;
+                Vector3 pB = li[(i+1)%li.Count] * 1f;
+
+                float distAB = Vector3.Distance(pA, pB);
+                if (step < distAB)
+                {
+                    GetData(pA, pB, step, ref pC);
+
+                    liHomogene.Add(pC);
+                    li[i] = pC * 1f;
+                    i--;
+                }
+                else
+                {
+                    Vector3 pNext = li[(i + 2) % li.Count];
+                    parcours = 0;
+                    bool depasse = false;
+                    do
+                    {
+                        GetData(pB, pNext, parcours, ref pC);
+                        parcours += 0.025f;
+                        if (Vector3.Distance(pB, pC) > Vector3.Distance(pB, pNext))
+                        {
+                            depasse = true;
+                            pB = pNext * 1f;
+                            pNext = li[(i + 3) % li.Count];
+                            parcours = 0;
+                        }
+                    }
+                    while (Vector3.Distance(pA, pC) < step);
+                    if (depasse)
+                    {
+                        li[(i + 2) % li.Count] = pC * 1f;
+                        i++;
+                    }
+                    else
+                    {
+                        li[(i + 1) % li.Count] = pC * 1f;
+                    }
+                    liHomogene.Add(pC);
+                }
+            }
+
+
+            FileStream fs = new FileStream(@"D:\Desktop\KHDebug\KHDebug\bin\DesktopGL\AnyCPU\Debug\Content\Models\TT08\OBJECTS\TT08-mdl-Tram\move_000.bin", FileMode.OpenOrCreate);
+            BinaryWriter bw = new BinaryWriter(fs);
+            bw.Write(li.Count);
+            bw.Write(0);
+            bw.Write(0xFF000000);
+            bw.Write(0);
+
+            for (int i = 0; i < liHomogene.Count; i++)
+            {
+                Vector3 before = liHomogene[i];
+                Vector3 next = liHomogene[(i + 1) % liHomogene.Count];
+                output += liHomogene[i].X.ToString("0.000000") + "|" + liHomogene[i].Y.ToString("0.000000") + "|" + liHomogene[i].Z.ToString("0.000000") + "\r\n";
+
+                Vector3 module = (next - before) / Vector3.Distance(next, before);
+
+                float angle = (float)Math.Atan2(module.X, module.Z);
+                Matrix m__ = Matrix.CreateScale(1f) * Matrix.CreateFromYawPitchRoll(angle + MathHelper.ToRadians(90), 0, MathHelper.ToRadians(90)) * Matrix.CreateTranslation(before);
+
+                bw.Write(m__.M11);
+                bw.Write(m__.M12);
+                bw.Write(m__.M13);
+                bw.Write(m__.M14);
+                bw.Write(m__.M21);
+                bw.Write(m__.M22);
+                bw.Write(m__.M23);
+                bw.Write(m__.M24);
+                bw.Write(m__.M31);
+                bw.Write(m__.M32);
+                bw.Write(m__.M33);
+                bw.Write(m__.M34);
+                bw.Write(m__.M41);
+                bw.Write(m__.M42);
+                bw.Write(m__.M43);
+                bw.Write(m__.M44);
+
+            }
+
+
+            bw.Close();
+            fs.Close();

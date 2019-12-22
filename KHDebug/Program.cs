@@ -14,11 +14,11 @@ namespace KHDebug
         [STAThread]
         static void Main()
         {
-            try
-            {
+            /*try
+            {*/
                 game = new MainGame();
                 game.Run();
-            }
+            /*}
             catch (Exception ex)
             {
                 if (ex.ToString().ToLower().Contains("notfound"))
@@ -29,7 +29,7 @@ namespace KHDebug
                 }
                 Console.WriteLine(ex.ToString());
                 Console.ReadKey(true);
-            }
+            }*/
             System.Diagnostics.Process.GetCurrentProcess().Kill();
         }
     }
